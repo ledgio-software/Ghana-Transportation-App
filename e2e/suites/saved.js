@@ -46,6 +46,21 @@ module.exports = {
       await page.getByRole('button', { name: 'Save this trip' }).waitFor();
       if (sql(`select count(*) from saved_routes where user_id = '${PASSENGER}'`) !== '0') throw new Error('not removed');
     });
+    await step('same start and destination is refused (P1-FARE-01)', async () => {
+      await page.goto(`${base}/`);
+      await page.getByRole('button', { name: /^From/ }).click();
+      await page.getByText('Kasoa', { exact: true }).first().click();
+      await page.getByRole('button', { name: /^To/ }).click();
+      await page.getByText('Kasoa', { exact: true }).last().click();
+      await page.getByText('Start and destination must be different.').waitFor();
+      if (await page.getByRole('button', { name: 'Find fares' }).isEnabled()) throw new Error('search allowed');
+    });
+    await step('unsupported app version is asked to update (P1-ACC-04)', async () => {
+      sql("update app_versions set min_supported = '9.9.9' where platform = 'web'");
+      await page.goto(`${base}/`);
+      await page.getByText('This version is no longer supported. Please update the app to keep using it.').waitFor();
+      sql("update app_versions set min_supported = '0.1.0' where platform = 'web'");
+    });
     await step('switch the app to Twi and back (P1-ACC)', async () => {
       await page.goto(`${base}/settings`);
       await page.getByRole('radio', { name: 'Twi' }).click();

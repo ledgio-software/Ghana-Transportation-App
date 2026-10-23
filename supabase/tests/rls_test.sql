@@ -19,6 +19,9 @@ begin
   select count(*) into n from public.search_fares(
     '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000204');
   assert n = 2, format('expected 2 Circle->Asafo options, got %s', n);
+  assert (select array_agg(official_pesewas) from public.search_fares(
+    '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000204')) = array[12000, 15000],
+    'cheapest option first';
   begin
     update public.fares set amount_pesewas = 1;
     assert (select count(*) from public.fares where amount_pesewas = 1) = 0, 'anon must not edit fares';
@@ -150,8 +153,18 @@ reset role;
 -- Retention job anonymises old reports.
 update public.fare_reports set created_at = now() - interval '91 days'
 where client_id = '11111111-1111-4111-8111-111111111111';
-do $$ begin
-  assert (public.purge_expired_data() ->> 'fare_reports_anonymised')::int = 1, 'old report anonymised';
+insert into public.trips_planned (user_id, origin_station_id, destination_station_id, created_at) values
+  ('00000000-0000-4000-8000-00000000a001', '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000202', now() - interval '13 months'),
+  ('00000000-0000-4000-8000-00000000a001', '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000202', now());
+insert into public.weather_snapshots (location, forecast_for, provider, data) values
+  (extensions.st_geogfromtext('POINT(-0.2 5.6)'), now() - interval '8 days', 'test', '{}');
+do $$
+declare res jsonb;
+begin
+  res := public.purge_expired_data();
+  assert (res ->> 'fare_reports_anonymised')::int = 1, 'old report anonymised';
+  assert (res ->> 'trips_planned_deleted')::int = 1, 'trip older than 12 months deleted, recent kept';
+  assert (res ->> 'weather_snapshots_deleted')::int = 1, 'old weather deleted';
 end $$;
 
 -- Admin tools: station editor with coordinates.
@@ -352,5 +365,27 @@ do $$ begin
   assert (select count(*) from public.saved_routes) = 0, 'cannot see other people''s saved routes';
 end $$;
 reset role;
+
+-- Rejected reports do not count towards "people paid this week"; absurd amounts are refused.
+insert into public.fare_reports (client_id, user_id, route_id, operator_id, vehicle_type, class, amount_pesewas, travelled_at, status) values
+  (gen_random_uuid(), '00000000-0000-4000-8000-00000000a001', '00000000-0000-4000-8000-000000000303', '00000000-0000-4000-8000-000000000101', 'bus', 'executive', 15500, now(), 'accepted'),
+  (gen_random_uuid(), '00000000-0000-4000-8000-00000000a001', '00000000-0000-4000-8000-000000000303', '00000000-0000-4000-8000-000000000101', 'bus', 'executive', 99900, now(), 'rejected');
+do $$ begin
+  assert (select reported_median_pesewas from public.search_fares(
+    '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000204') where class = 'executive') = 15500,
+    'rejected report left out of the median';
+  begin
+    insert into public.fare_reports (client_id, user_id, route_id, vehicle_type, amount_pesewas, travelled_at)
+    values (gen_random_uuid(), '00000000-0000-4000-8000-00000000a001', '00000000-0000-4000-8000-000000000303', 'bus', 10000000, now());
+    raise exception 'GH¢100,000 report accepted';
+  exception when check_violation then null;
+  end;
+end $$;
+
+-- Alerts older than 90 days are deleted.
+insert into public.notifications (user_id, kind, created_at) values ('00000000-0000-4000-8000-00000000a002', 'fare_changed', now() - interval '91 days');
+do $$ begin
+  assert (public.purge_expired_data() ->> 'notifications_deleted')::int = 1, 'old alert deleted';
+end $$;
 
 \echo 'All database checks passed'

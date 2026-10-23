@@ -20,7 +20,7 @@ supabase/           Database migrations, seed data, edge functions, local config
   migrations/       Additive-only SQL migrations (core, phase 1, retention)
   functions/        send-sms (Hubtel -> Arkesel failover), delete-account
   tests/            Access-rule tests run against plain Postgres in CI
-docs/               Architecture notes and decision records (docs/adr)
+docs/               Architecture notes, decision records (docs/adr), Phase 1 user stories
 scripts/test-db.sh  Applies migrations to a fresh database and runs the access-rule tests
 ```
 
