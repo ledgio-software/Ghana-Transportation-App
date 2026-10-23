@@ -1,16 +1,21 @@
 import { checkFare, type FareOption, formatPesewas, parseCedisToPesewas } from '@gta/shared';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { FareCard } from '../components/FareCard';
 import { Body, Button, Loading, Notice, Screen, Title } from '../components/ui';
 import { searchFares } from '../lib/api';
+import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
+import { enqueue } from '../lib/outbox';
+import { useSession } from '../lib/session';
 import { colors, font, space } from '../lib/theme';
 
 /** P1-FARE results with the P1-ALERT fair price check under each option. */
 export default function ResultsScreen() {
   const { t, lang } = useI18n();
+  const router = useRouter();
+  const reportsOn = useFlag('phase1.fare_reports');
   const { from, to, title } = useLocalSearchParams<{ from: string; to: string; title?: string }>();
   const [fares, setFares] = useState<FareOption[] | null>(null);
   const [offlineSince, setOfflineSince] = useState<string | null>(null);
@@ -44,16 +49,37 @@ export default function ResultsScreen() {
       {fares?.map((fare) => (
         <View key={fare.fare_id} style={styles.option}>
           <FareCard fare={fare} />
-          <FareCheck fare={fare} />
+          {reportsOn && (
+            <Button
+              label={t('report.button')}
+              variant="secondary"
+              onPress={() =>
+                router.push({
+                  pathname: '/report',
+                  params: {
+                    route_id: fare.route_id,
+                    operator_id: fare.operator_id ?? '',
+                    vehicle_type: fare.vehicle_type,
+                    class: fare.class,
+                    label: [title, fare.operator_name, fare.vehicle_type_name].filter(Boolean).join(' · '),
+                  },
+                })
+              }
+            />
+          )}
+          <FareCheck fare={fare} reportsOn={reportsOn} />
         </View>
       ))}
     </Screen>
   );
 }
 
-function FareCheck({ fare }: { fare: FareOption }) {
+function FareCheck({ fare, reportsOn }: { fare: FareOption; reportsOn: boolean }) {
   const { t } = useI18n();
+  const router = useRouter();
+  const session = useSession();
   const [input, setInput] = useState('');
+  const [reported, setReported] = useState(false);
   const quoted = parseCedisToPesewas(input);
   const result =
     quoted != null
@@ -81,6 +107,30 @@ function FareCheck({ fare }: { fare: FareOption }) {
           {result.excessPesewas > 0 ? `\n${t('check.excess', { amount: formatPesewas(result.excessPesewas) })}` : ''}
         </Notice>
       )}
+      {result?.verdict === 'above_normal' && quoted != null && reportsOn &&
+        (reported ? (
+          <Body>{t('check.reported')}</Body>
+        ) : (
+          <Button
+            label={t('check.report')}
+            onPress={() => {
+              if (!session) {
+                router.push('/sign-in');
+                return;
+              }
+              // One tap (P1-ALERT-02): saved on the phone and sent when online.
+              enqueue('overcharge_report', {
+                route_id: fare.route_id,
+                fare_id: fare.fare_id,
+                kind: 'overcharge',
+                quoted_pesewas: quoted,
+                reference_pesewas: result.referencePesewas,
+                occurred_at: new Date().toISOString(),
+              });
+              setReported(true);
+            }}
+          />
+        ))}
     </View>
   );
 }

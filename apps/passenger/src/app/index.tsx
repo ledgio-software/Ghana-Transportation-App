@@ -5,6 +5,7 @@ import { StationPicker } from '../components/StationPicker';
 import { Body, Button, Loading, Notice, Screen, Title } from '../components/ui';
 import { loadStations } from '../lib/api';
 import { formatDate, useI18n } from '../lib/i18n';
+import { useOutboxCount } from '../lib/outbox';
 
 /** P1-FARE: search from and to. Works signed out and offline (last saved stations). */
 export default function SearchScreen() {
@@ -15,6 +16,7 @@ export default function SearchScreen() {
   const [failed, setFailed] = useState(false);
   const [from, setFrom] = useState<StationRow | null>(null);
   const [to, setTo] = useState<StationRow | null>(null);
+  const waiting = useOutboxCount();
 
   const load = useCallback(() => {
     setFailed(false);
@@ -33,6 +35,7 @@ export default function SearchScreen() {
   return (
     <Screen>
       <Title>{t('search.title')}</Title>
+      {waiting > 0 && <Notice>{t('report.pending', { count: waiting })}</Notice>}
       {offlineSince && <Notice tone="warning">{t('common.offline', { date: formatDate(offlineSince, lang) })}</Notice>}
       {failed && (
         <>

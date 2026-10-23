@@ -3,11 +3,12 @@ import Constants from 'expo-constants';
 import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Linking, Platform, Pressable, Text } from 'react-native';
+import { AppState, Linking, Platform, Pressable, Text } from 'react-native';
 import { Body, Button, Screen, Title } from '../components/ui';
 import { loadAppVersion } from '../lib/api';
 import { I18nProvider, useI18n } from '../lib/i18n';
-import { SessionProvider } from '../lib/session';
+import { flush } from '../lib/outbox';
+import { SessionProvider, useSession } from '../lib/session';
 import { colors } from '../lib/theme';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
@@ -36,10 +37,31 @@ function VersionGate({ children }: { children: ReactNode }) {
   );
 }
 
+/** Sends waiting reports on start, on sign-in, when the app comes back to the front and when the network returns. */
+function OutboxSync() {
+  const session = useSession();
+  useEffect(() => {
+    if (session) void flush();
+  }, [session]);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void flush();
+    });
+    const onOnline = () => void flush();
+    if (Platform.OS === 'web') globalThis.addEventListener?.('online', onOnline);
+    return () => {
+      sub.remove();
+      if (Platform.OS === 'web') globalThis.removeEventListener?.('online', onOnline);
+    };
+  }, []);
+  return null;
+}
+
 function AppStack() {
   const { t } = useI18n();
   return (
     <VersionGate>
+      <OutboxSync />
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -65,6 +87,7 @@ function AppStack() {
           }}
         />
         <Stack.Screen name="results" options={{ title: t('search.button') }} />
+        <Stack.Screen name="report" options={{ title: t('report.button') }} />
         <Stack.Screen name="sign-in" options={{ title: t('auth.title') }} />
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
       </Stack>

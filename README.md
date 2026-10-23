@@ -32,7 +32,8 @@ scripts/test-db.sh  Applies migrations to a fresh database and runs the access-r
 - **English and Twi**, switchable in Settings. The Twi strings are drafts and need review by a native speaker.
 - **Phone login with an SMS code (P1-ACC).** Codes go through Hubtel, with Arkesel as a backup.
 - **Minimum version check:** older app versions can be told to update.
-- **Admin:** staff sign in with email, password and an authenticator-app code; confirm or change fares. Changes keep history and are written to the audit log.
+- **Report what you paid (P1-REPORT) and one-tap overcharge reports (P1-ALERT):** saved on the phone first, sent when online, never duplicated. Behind the `phase1.fare_reports` feature switch.
+- **Admin for the field team:** staff sign in with email, password and an authenticator-app code. They can add and edit stations (GPS + GhanaPostGPS), routes, operators, fare sources and fares (changes keep history and are written to the audit log), and accept or reject crowd reports.
 - **Privacy (P1-LEGAL):** row level security on every table and a nightly retention job. "Download my data" and "delete my account" exist in the backend; their screens come with the P1-LEGAL work.
 
 ## Run it locally
