@@ -61,6 +61,18 @@ export const en = {
   'check.report': 'Report overcharge',
   'check.reported': 'Overcharge reported. Thank you.',
 
+  'saved.save': 'Save this trip',
+  'saved.saved': 'Saved. We will tell you when the fare changes.',
+  'saved.remove': 'Remove from saved trips',
+  'saved.title': 'Your saved trips',
+  'saved.signIn': 'Sign in to save trips and get alerts when fares change.',
+
+  'alerts.title': 'Fare changes',
+  'alerts.new': 'Fare changes on your trips: {count} new',
+  'alerts.none': 'No fare changes yet on your saved trips.',
+  'alerts.changed': '{vehicle}: {old} → {new}',
+  'alerts.view': 'See fares',
+
   'legal.title': 'Before you report',
   'legal.intro': 'To send reports you need to agree to our terms of use and privacy notice. In short:',
   'legal.point1': 'We keep your phone number to stop fake reports. We never sell your data.',

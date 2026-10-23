@@ -63,6 +63,18 @@ export const tw: Translations = {
   'check.report': 'Ka sɛ wɔgyee wo ka bebrebe',
   'check.reported': 'Yɛanya wo amaneɛbɔ. Meda wo ase.',
 
+  'saved.save': 'Kora saa kwan yi',
+  'saved.saved': 'Yɛakora so. Yɛbɛka akyerɛ wo sɛ lɔre ka no sesa a.',
+  'saved.remove': 'Yi firi akwantuo a woakora mu',
+  'saved.title': 'Akwantuo a woakora',
+  'saved.signIn': 'Kɔ mu na woakora akwantuo na wonya amaneɛ sɛ lɔre ka sesa a.',
+
+  'alerts.title': 'Lɔre ka nsesaeɛ',
+  'alerts.new': 'Lɔre ka nsesaeɛ wɔ w\'akwantuo so: {count} foforɔ',
+  'alerts.none': 'Lɔre ka biara nsesaeɛ wɔ w\'akwantuo a woakora no so ɛ.',
+  'alerts.changed': '{vehicle}: {old} → {new}',
+  'alerts.view': 'Hwɛ lɔre ka',
+
   'legal.title': 'Ansa na woaka amaneɛ',
   'legal.intro': 'Sɛ wobɛsoma amaneɛbɔ a, ɛsɛ sɛ wopene yɛn mmara ne yɛn kokoam nhyehyɛeɛ so. Ne tiawa ne sɛ:',
   'legal.point1': 'Yɛkora wo fon nɔma de siw amaneɛbɔ a ɛnyɛ nokware ano. Yɛntɔn wo nsɛm da.',

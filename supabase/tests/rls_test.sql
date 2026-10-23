@@ -314,4 +314,43 @@ do $$ begin
 end $$;
 reset role;
 
+-- Saved routes: a fare change alerts people who saved the route; a confirmation does not.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a002';
+insert into public.saved_routes (route_id) values ('00000000-0000-4000-8000-000000000302');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+insert into public.saved_routes (route_id, notify_fare_changes) values ('00000000-0000-4000-8000-000000000302', false);
+set request.jwt.claims = '{"aal": "aal2"}';
+do $$
+declare fid uuid;
+begin
+  select id into fid from public.fares where route_id = '00000000-0000-4000-8000-000000000302' and effective_to is null;
+  update public.fares set last_confirmed_at = now() where id = fid;
+  perform public.change_fare(fid, 600);
+end $$;
+reset request.jwt.claims;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a002';
+do $$
+declare n public.notifications;
+begin
+  assert (select count(*) from public.notifications) = 1, 'one alert for the saver';
+  select * into n from public.notifications;
+  assert n.kind = 'fare_changed', n.kind;
+  assert (n.payload ->> 'old_pesewas')::int = 500 and (n.payload ->> 'new_pesewas')::int = 600, n.payload::text;
+  assert n.payload ->> 'origin_name' = 'Kwame Nkrumah Circle' and n.payload ->> 'destination_name' = 'Fadama', n.payload::text;
+  update public.notifications set read_at = now() where id = n.id;
+  assert (select read_at from public.notifications where id = n.id) is not null, 'can mark own alert read';
+  assert jsonb_array_length(public.export_my_data() -> 'notifications') = 1, 'alerts in data export';
+end $$;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+do $$ begin
+  assert (select count(*) from public.notifications) = 0, 'alerts off: nothing';
+end $$;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+do $$ begin
+  assert (select count(*) from public.notifications) = 0, 'did not save the route: nothing';
+  assert (select count(*) from public.saved_routes) = 0, 'cannot see other people''s saved routes';
+end $$;
+reset role;
+
 \echo 'All database checks passed'

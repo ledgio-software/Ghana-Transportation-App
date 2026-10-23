@@ -8,6 +8,7 @@ import { searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
 import { useConsents } from '../lib/consent';
+import { useSavedTrips } from '../lib/saved';
 import { enqueue } from '../lib/outbox';
 import { useSession } from '../lib/session';
 import { colors, font, space } from '../lib/theme';
@@ -47,6 +48,7 @@ export default function ResultsScreen() {
       )}
       {!fares && !failed && <Loading label={t('common.loading')} />}
       {fares && fares.length === 0 && <Body>{t('fare.none')}</Body>}
+      {fares && fares.length > 0 && <SaveTrip from={from} to={to} routeIds={[...new Set(fares.map((f) => f.route_id))]} />}
       {fares?.map((fare) => (
         <View key={fare.fare_id} style={styles.option}>
           <FareCard fare={fare} />
@@ -72,6 +74,47 @@ export default function ResultsScreen() {
         </View>
       ))}
     </Screen>
+  );
+}
+
+/** "Save this trip": saved trips appear on the home screen and get fare-change alerts. */
+function SaveTrip({ from, to, routeIds }: { from?: string; to?: string; routeIds: string[] }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const { trips, save, remove, signedIn } = useSavedTrips();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const saved = trips.find((trip) => trip.originId === from && trip.destinationId === to);
+
+  async function toggle() {
+    if (!signedIn) {
+      router.push('/sign-in');
+      return;
+    }
+    setBusy(true);
+    setFailed(false);
+    try {
+      if (saved) await remove(saved.routeIds);
+      else await save(routeIds);
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={styles.save}>
+      {saved && <Body muted>{t('saved.saved')}</Body>}
+      {!signedIn && <Body muted>{t('saved.signIn')}</Body>}
+      {failed && <Notice tone="danger">{t('common.error')}</Notice>}
+      <Button
+        label={saved ? t('saved.remove') : t('saved.save')}
+        variant={saved ? 'secondary' : 'primary'}
+        onPress={toggle}
+        loading={busy}
+      />
+    </View>
   );
 }
 
@@ -143,6 +186,7 @@ function FareCheck({ fare, reportsOn }: { fare: FareOption; reportsOn: boolean }
 
 const styles = StyleSheet.create({
   option: { gap: space.sm, marginBottom: space.md },
+  save: { gap: space.sm, marginBottom: space.md },
   check: { gap: space.sm, paddingHorizontal: space.xs },
   label: { fontSize: font.small, color: colors.muted, fontWeight: '600' },
   input: {
