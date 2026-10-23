@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Ghana Transport",
+    "slug": "ghana-transport",
+    "scheme": "ghanatransport",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "gh.ghanatransport.app"
+    },
+    "android": {
+      "package": "gh.ghanatransport.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0B6E4F",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "Ghana Transport",
+      "shortName": "GH Transport",
+      "themeColor": "#0B6E4F",
+      "backgroundColor": "#FFFFFF"
+    },
+    "plugins": ["expo-router", "expo-sqlite", "expo-localization"],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
