@@ -72,3 +72,34 @@ jobs:
           deno-version: v2.x
       - run: deno check send-sms/index.ts delete-account/index.ts
       - run: deno test --allow-env _shared
+
+  e2e:
+    name: Browser tests (real database and API)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get install -y postgresql-client
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: scripts/test-e2e.sh
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-failure-screenshots
+          path: e2e/results/

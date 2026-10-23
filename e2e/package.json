@@ -1,0 +1,13 @@
+{
+  "name": "@gta/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser tests of the passenger web app and admin against a real database and API (Postgres + PostgREST).",
+  "scripts": {
+    "e2e": "node run.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1",
+    "serve-handler": "6.1.6"
+  }
+}

@@ -69,7 +69,10 @@ npm run typecheck                         # all workspaces
 npm test                                  # business rules and translations
 DATABASE_URL=postgres://... scripts/test-db.sh   # migrations + access rules on Postgres/PostGIS
 cd supabase/functions && deno test --allow-env _shared
+DATABASE_URL=postgres://... scripts/test-e2e.sh   # browser tests against a real database + API (see e2e/)
 ```
+
+The browser tests build the passenger web app and the admin, load the migrations and seed into a fresh database, put PostgREST (the API server Supabase uses) in front of it, and drive the apps in Chromium as a signed-in passenger or a staff member with two-factor. Each step also checks what was saved in the database. `E2E_ONLY=admin` runs one suite; failure screenshots go to `e2e/results/`.
 
 CI (`.github/workflows/ci.yml`) runs all of these plus the Android and web builds on every pull request.
 
