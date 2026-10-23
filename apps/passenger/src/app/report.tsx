@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Body, Button, Notice, Screen, Title } from '../components/ui';
+import { useConsents } from '../lib/consent';
 import { useI18n } from '../lib/i18n';
 import { enqueue, flush, isPending } from '../lib/outbox';
 import { useSession } from '../lib/session';
@@ -21,6 +22,7 @@ export default function ReportScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const session = useSession();
+  const consents = useConsents();
   const params = useLocalSearchParams<Params>();
   const [amount, setAmount] = useState('');
   const [day, setDay] = useState<'today' | 'yesterday'>('today');
@@ -57,6 +59,22 @@ export default function ReportScreen() {
         <Title>{t('report.title')}</Title>
         <Body>{t('report.signInFirst')}</Body>
         <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
+      </Screen>
+    );
+  }
+
+  if (!consents.agreed && !result) {
+    return (
+      <Screen>
+        <Title>{t('legal.title')}</Title>
+        {consents.loaded ? (
+          <>
+            <Body>{t('legal.intro')}</Body>
+            <Button label={t('legal.continue')} onPress={() => router.push('/consent')} />
+          </>
+        ) : (
+          <Body muted>{t('common.loading')}</Body>
+        )}
       </Screen>
     );
   }

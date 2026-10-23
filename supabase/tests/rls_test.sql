@@ -27,6 +27,26 @@ begin
 end $$;
 reset role;
 
+-- Reports need agreement to the terms and privacy notice first.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+do $$ begin
+  begin
+    insert into public.fare_reports (client_id, route_id, vehicle_type, amount_pesewas, travelled_at)
+    values (gen_random_uuid(), '00000000-0000-4000-8000-000000000301', 'trotro', 1100, now());
+    raise exception 'report accepted without consent';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+insert into public.consents (user_id, consent_type, document_version, granted) values
+  ('00000000-0000-4000-8000-00000000a001', 'terms', 'v1', true),
+  ('00000000-0000-4000-8000-00000000a001', 'privacy', 'v1', true);
+reset role;
+-- Passenger B (used for the rate-limit check) agreed too.
+insert into public.consents (user_id, consent_type, document_version, granted) values
+  ('00000000-0000-4000-8000-00000000a002', 'terms', 'v1', true),
+  ('00000000-0000-4000-8000-00000000a002', 'privacy', 'v1', true);
+
 -- Passenger A reports a fare; passenger B cannot see it; the median reflects it.
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
@@ -278,5 +298,20 @@ do $$ begin
 end $$;
 reset role;
 reset request.jwt.claims;
+
+-- Withdrawing agreement (latest answer "no") stops further reports.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+insert into public.consents (user_id, consent_type, document_version, granted)
+values ('00000000-0000-4000-8000-00000000a001', 'privacy', 'v1', false);
+do $$ begin
+  begin
+    insert into public.overcharge_reports (client_id, route_id, kind, quoted_pesewas, occurred_at)
+    values (gen_random_uuid(), '00000000-0000-4000-8000-000000000301', 'overcharge', 2000, now());
+    raise exception 'report accepted after consent withdrawn';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
 
 \echo 'All database checks passed'

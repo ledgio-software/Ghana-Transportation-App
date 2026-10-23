@@ -32,6 +32,7 @@ export default function SettingsScreen() {
       {session?.user.phone ? (
         <>
           <Body>{t('settings.signedInAs', { phone: maskPhone(`+${session.user.phone.replace(/^\+/, '')}`) })}</Body>
+          <Button label={t('settings.privacy')} variant="secondary" onPress={() => router.push('/privacy')} />
           <Button label={t('settings.signOut')} variant="secondary" onPress={() => supabase.auth.signOut()} />
         </>
       ) : (

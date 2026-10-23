@@ -56,6 +56,11 @@ async function run(): Promise<void> {
   save([...result.remaining, ...items.filter((i) => !attempted.has(i.client_id))]);
 }
 
+/** Drops every waiting report (after the account is deleted, they can no longer be sent). */
+export function clearOutbox(): void {
+  save([]);
+}
+
 export function isPending(clientId: string): boolean {
   return items.some((i) => i.client_id === clientId);
 }

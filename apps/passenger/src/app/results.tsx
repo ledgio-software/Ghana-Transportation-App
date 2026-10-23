@@ -7,6 +7,7 @@ import { Body, Button, Loading, Notice, Screen, Title } from '../components/ui';
 import { searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
+import { useConsents } from '../lib/consent';
 import { enqueue } from '../lib/outbox';
 import { useSession } from '../lib/session';
 import { colors, font, space } from '../lib/theme';
@@ -78,6 +79,7 @@ function FareCheck({ fare, reportsOn }: { fare: FareOption; reportsOn: boolean }
   const { t } = useI18n();
   const router = useRouter();
   const session = useSession();
+  const consents = useConsents();
   const [input, setInput] = useState('');
   const [reported, setReported] = useState(false);
   const quoted = parseCedisToPesewas(input);
@@ -116,6 +118,10 @@ function FareCheck({ fare, reportsOn }: { fare: FareOption; reportsOn: boolean }
             onPress={() => {
               if (!session) {
                 router.push('/sign-in');
+                return;
+              }
+              if (!consents.agreed) {
+                router.push('/consent');
                 return;
               }
               // One tap (P1-ALERT-02): saved on the phone and sent when online.

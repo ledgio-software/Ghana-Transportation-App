@@ -89,6 +89,8 @@ function AppStack() {
         <Stack.Screen name="results" options={{ title: t('search.button') }} />
         <Stack.Screen name="report" options={{ title: t('report.button') }} />
         <Stack.Screen name="sign-in" options={{ title: t('auth.title') }} />
+        <Stack.Screen name="consent" options={{ title: t('legal.title') }} />
+        <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
       </Stack>
     </VersionGate>

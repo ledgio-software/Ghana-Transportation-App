@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput } from 'react-native';
 import { Body, Button, Notice, Screen, Title } from '../components/ui';
+import { checkAgreed } from '../lib/consent';
 import { useI18n } from '../lib/i18n';
 import { supabase } from '../lib/supabase';
 import { colors, font, space } from '../lib/theme';
@@ -35,10 +36,17 @@ export default function SignInScreen() {
     if (!phone) return;
     setBusy(true);
     setError(null);
-    const { error: err } = await supabase.auth.verifyOtp({ phone, token: code.trim(), type: 'sms' });
+    const { data, error: err } = await supabase.auth.verifyOtp({ phone, token: code.trim(), type: 'sms' });
+    if (err || !data.user) {
+      setBusy(false);
+      setError(t('common.error'));
+      return;
+    }
+    // New users (or a new version of the terms) see the agreement before going back.
+    const agreed = await checkAgreed(data.user.id).catch(() => false);
     setBusy(false);
-    if (err) setError(t('common.error'));
-    else router.back();
+    if (agreed) router.back();
+    else router.replace('/consent');
   }
 
   return (

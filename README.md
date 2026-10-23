@@ -35,7 +35,7 @@ scripts/test-db.sh  Applies migrations to a fresh database and runs the access-r
 - **Report what you paid (P1-REPORT) and one-tap overcharge reports (P1-ALERT):** saved on the phone first, sent when online, never duplicated. Behind the `phase1.fare_reports` feature switch.
 - **Admin for the field team:** staff sign in with email, password and an authenticator-app code. They can add and edit stations (GPS + GhanaPostGPS), routes, operators, fare sources and fares (changes keep history and are written to the audit log), and accept or reject crowd reports.
 - **Spreadsheet import:** the field team's CSV files (Google Sheets, Excel, KoboToolbox) for stations and fares, with downloadable templates, a row-by-row check before saving, and results per spreadsheet line (added, confirmed, price changed, skipped as older, failed).
-- **Privacy (P1-LEGAL):** row level security on every table and a nightly retention job. "Download my data" and "delete my account" exist in the backend; their screens come with the P1-LEGAL work.
+- **Privacy (P1-LEGAL):** before their first report, users agree to the terms and privacy notice (stored as versioned, timestamped consent records; the database refuses reports without it). Settings → Privacy shows their consents, lets them turn marketing on or off, correct their details, download all their data and delete their account. Row level security on every table and a nightly retention job. The in-app text is a plain summary; set `EXPO_PUBLIC_LEGAL_URL` to the lawyer-approved documents and bump `LEGAL_VERSIONS` in `packages/shared/src/legal.ts` when they change.
 
 ## Run it locally
 
