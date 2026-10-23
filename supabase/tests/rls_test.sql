@@ -198,4 +198,85 @@ end $$;
 reset role;
 reset request.jwt.claims;
 
+-- Spreadsheet import: stations then fares, row by row.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+set request.jwt.claims = '{"aal": "aal2"}';
+do $$
+declare res jsonb;
+begin
+  res := public.import_stations(jsonb_build_array(
+    jsonb_build_object('line', 2, 'name', 'Madina', 'slug', 'madina', 'kind', 'lorry_station', 'city', 'Accra',
+                       'region', 'Greater Accra', 'latitude', 5.6680, 'longitude', -0.1650, 'ghanapost_gps', 'GM-001-0001'),
+    jsonb_build_object('line', 3, 'name', 'Kasoa', 'slug', 'kasoa', 'kind', 'lorry_station', 'city', 'Kasoa',
+                       'region', 'Central', 'latitude', 5.5345, 'longitude', -0.4175),
+    jsonb_build_object('line', 4, 'name', 'Lagos', 'slug', 'lagos', 'kind', 'stop', 'city', 'Lagos',
+                       'region', null, 'latitude', 6.5, 'longitude', 3.4)
+  ));
+  assert res -> 0 ->> 'status' = 'created', res::text;
+  assert res -> 1 ->> 'status' = 'updated', res::text;
+  assert res -> 2 ->> 'status' = 'error' and res -> 2 ->> 'message' like '%outside Ghana%', res::text;
+  assert (select round(longitude::numeric, 4) from public.stations where slug = 'kasoa') = -0.4175, 'kasoa moved';
+
+  res := public.import_fares(jsonb_build_array(
+    -- new route and fare
+    jsonb_build_object('line', 2, 'origin_station_id', '00000000-0000-4000-8000-000000000205',
+      'destination_station_id', '00000000-0000-4000-8000-000000000204', 'route_kind', 'intracity',
+      'operator_id', null, 'vehicle_type', 'trotro', 'class', 'standard', 'amount_pesewas', 300,
+      'is_official', true, 'observed_on', '2026-10-20', 'source_name', 'Kejetia board Oct 2026',
+      'source_kind', 'station_board', 'departure_mode', 'fill_and_go', 'first_departure', '05:00',
+      'last_departure', null, 'collected_by', 'Ama', 'evidence_url', 'https://example.com/board.jpg'),
+    -- same fare seen again a day later
+    jsonb_build_object('line', 3, 'origin_station_id', '00000000-0000-4000-8000-000000000205',
+      'destination_station_id', '00000000-0000-4000-8000-000000000204', 'route_kind', 'intracity',
+      'operator_id', null, 'vehicle_type', 'trotro', 'class', 'standard', 'amount_pesewas', 300,
+      'is_official', true, 'observed_on', '2026-10-21', 'source_name', 'kejetia BOARD oct 2026',
+      'source_kind', 'station_board', 'departure_mode', 'fill_and_go', 'first_departure', null,
+      'last_departure', null, 'collected_by', null, 'evidence_url', null),
+    -- old observation of a fare confirmed today: skipped
+    jsonb_build_object('line', 4, 'origin_station_id', '00000000-0000-4000-8000-000000000201',
+      'destination_station_id', '00000000-0000-4000-8000-000000000202', 'route_kind', 'intracity',
+      'operator_id', '00000000-0000-4000-8000-000000000103', 'vehicle_type', 'trotro', 'class', 'standard',
+      'amount_pesewas', 1400, 'is_official', true, 'observed_on', '2026-01-01', 'source_name', null,
+      'source_kind', 'field_ridden', 'departure_mode', 'fill_and_go', 'first_departure', null,
+      'last_departure', null, 'collected_by', 'Kofi', 'evidence_url', null),
+    -- new price seen today: changed, history kept
+    jsonb_build_object('line', 5, 'origin_station_id', '00000000-0000-4000-8000-000000000201',
+      'destination_station_id', '00000000-0000-4000-8000-000000000202', 'route_kind', 'intracity',
+      'operator_id', '00000000-0000-4000-8000-000000000103', 'vehicle_type', 'trotro', 'class', 'standard',
+      'amount_pesewas', 1500, 'is_official', true, 'observed_on', to_char(now() at time zone 'Africa/Accra', 'YYYY-MM-DD'),
+      'source_name', null, 'source_kind', 'field_ridden', 'departure_mode', 'fill_and_go',
+      'first_departure', null, 'last_departure', null, 'collected_by', 'Kofi', 'evidence_url', null),
+    -- unknown vehicle type: error, others unaffected
+    jsonb_build_object('line', 6, 'origin_station_id', '00000000-0000-4000-8000-000000000205',
+      'destination_station_id', '00000000-0000-4000-8000-000000000204', 'route_kind', 'intracity',
+      'operator_id', null, 'vehicle_type', 'hovercraft', 'class', 'standard', 'amount_pesewas', 300,
+      'is_official', false, 'observed_on', '2026-10-21', 'source_name', null, 'source_kind', 'field_ridden',
+      'departure_mode', 'unknown', 'first_departure', null, 'last_departure', null,
+      'collected_by', null, 'evidence_url', null)
+  ));
+  assert (select jsonb_agg(x ->> 'status') from jsonb_array_elements(res) x)
+         = '["created", "confirmed", "skipped", "changed", "error"]'::jsonb, res::text;
+  assert (select count(*) from public.fare_sources where lower(name) = 'kejetia board oct 2026') = 1, 'source reused, not duplicated';
+  assert (select collected_by from public.fares f join public.routes r on r.id = f.route_id
+          where r.origin_station_id = '00000000-0000-4000-8000-000000000205' and f.effective_to is null) = 'Ama',
+         'collector kept on confirm';
+  assert (select (last_confirmed_at at time zone 'Africa/Accra')::date from public.fares f join public.routes r on r.id = f.route_id
+          where r.origin_station_id = '00000000-0000-4000-8000-000000000205' and f.effective_to is null) = '2026-10-21',
+         'confirmation date moved forward';
+  assert (select official_pesewas from public.search_fares(
+    '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000202')) = 1500, 'changed fare is current';
+end $$;
+
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+do $$ begin
+  begin
+    perform public.import_fares('[]'::jsonb);
+    raise exception 'passenger ran an import';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+reset request.jwt.claims;
+
 \echo 'All database checks passed'

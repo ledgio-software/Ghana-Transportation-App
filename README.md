@@ -34,6 +34,7 @@ scripts/test-db.sh  Applies migrations to a fresh database and runs the access-r
 - **Minimum version check:** older app versions can be told to update.
 - **Report what you paid (P1-REPORT) and one-tap overcharge reports (P1-ALERT):** saved on the phone first, sent when online, never duplicated. Behind the `phase1.fare_reports` feature switch.
 - **Admin for the field team:** staff sign in with email, password and an authenticator-app code. They can add and edit stations (GPS + GhanaPostGPS), routes, operators, fare sources and fares (changes keep history and are written to the audit log), and accept or reject crowd reports.
+- **Spreadsheet import:** the field team's CSV files (Google Sheets, Excel, KoboToolbox) for stations and fares, with downloadable templates, a row-by-row check before saving, and results per spreadsheet line (added, confirmed, price changed, skipped as older, failed).
 - **Privacy (P1-LEGAL):** row level security on every table and a nightly retention job. "Download my data" and "delete my account" exist in the backend; their screens come with the P1-LEGAL work.
 
 ## Run it locally

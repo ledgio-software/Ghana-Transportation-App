@@ -12,6 +12,7 @@ const NAV = [
   { href: '/routes', label: 'Routes' },
   { href: '/operators', label: 'Operators & sources' },
   { href: '/reports', label: 'Reports' },
+  { href: '/import', label: 'Import' },
 ];
 
 /** Page frame for signed-in staff. Sends anyone without a two-factor session back to sign-in. */
