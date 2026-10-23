@@ -134,4 +134,68 @@ do $$ begin
   assert (public.purge_expired_data() ->> 'fare_reports_anonymised')::int = 1, 'old report anonymised';
 end $$;
 
+-- Admin tools: station editor with coordinates.
+insert into auth.users (id, phone) values ('00000000-0000-4000-8000-00000000a004', '+233240000004');
+insert into public.user_roles (user_id, role) values ('00000000-0000-4000-8000-00000000a004', 'moderator');
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+set request.jwt.claims = '{"aal": "aal2"}';
+do $$
+declare sid uuid;
+begin
+  sid := public.save_station(null, 'Kaneshie', 'kaneshie', 'lorry_station', 'Accra', 'Greater Accra', 5.5660, -0.2360, 'GA-123-4567');
+  assert (select round(latitude::numeric, 4) from public.stations where id = sid) = 5.5660, 'latitude stored';
+  assert (select round(longitude::numeric, 4) from public.stations where id = sid) = -0.2360, 'longitude stored';
+  perform public.save_station(sid, 'Kaneshie Market', 'kaneshie', 'lorry_station', 'Accra', 'Greater Accra', 5.5670, -0.2370);
+  assert (select name from public.stations where id = sid) = 'Kaneshie Market', 'station updated';
+  begin
+    -- latitude and longitude swapped: lands outside Ghana
+    perform public.save_station(null, 'Swapped', 'swapped', 'stop', 'Accra', null, -0.2360, 5.5660);
+    raise exception 'swapped coordinates accepted';
+  exception when invalid_parameter_value then null;
+  end;
+end $$;
+
+-- A passenger cannot save stations or moderate.
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+do $$ begin
+  begin
+    perform public.save_station(null, 'Fake', 'fake', 'stop', 'Accra', null, 5.6, -0.2);
+    raise exception 'passenger saved a station';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.moderate_report('fare', (select id from public.fare_reports limit 1), 'accepted');
+    raise exception 'passenger moderated';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
+-- Moderator with two-factor accepts a report; amounts cannot be edited directly.
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a004';
+do $$
+declare
+  rid uuid;
+  upd integer;
+begin
+  select id into rid from public.fare_reports where status = 'pending' limit 1;
+  perform public.moderate_report('fare', rid, 'accepted');
+  assert (select status from public.fare_reports where id = rid) = 'accepted', 'report accepted';
+  assert (select moderated_by from public.fare_reports where id = rid) = '00000000-0000-4000-8000-00000000a004', 'moderator recorded';
+  update public.fare_reports set amount_pesewas = 1 where id = rid;
+  get diagnostics upd = row_count;
+  assert upd = 0, 'moderators cannot edit report amounts';
+end $$;
+set request.jwt.claims = '{"aal": "aal1"}';
+do $$ begin
+  begin
+    perform public.moderate_report('fare', (select id from public.fare_reports limit 1), 'rejected');
+    raise exception 'moderator without two-factor moderated';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+reset request.jwt.claims;
+
 \echo 'All database checks passed'

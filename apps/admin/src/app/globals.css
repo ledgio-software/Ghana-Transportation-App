@@ -25,3 +25,19 @@ th { font-size: 13px; color: var(--muted); }
 .error { color: var(--danger); }
 .muted { color: var(--muted); }
 .row { display: flex; gap: 8px; align-items: center; }
+nav { gap: 16px; flex-wrap: wrap; }
+nav a { text-decoration: none; opacity: 0.85; }
+nav a.active { opacity: 1; text-decoration: underline; font-weight: 600; }
+h1 { font-size: 24px; margin: 0 0 16px; }
+h2 { font-size: 18px; margin: 24px 0 8px; }
+select, textarea { font: inherit; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+form.grid { max-width: none; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; background: var(--surface); padding: 16px; border-radius: 10px; margin-bottom: 24px; }
+form.grid .full { grid-column: 1 / -1; }
+label.check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.ok { color: var(--primary); }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tabs button.on { background: var(--primary); color: #fff; }
+.tabs button { background: #fff; color: var(--primary); }
+td.num { font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--surface); font-size: 13px; }
+td button { white-space: nowrap; }

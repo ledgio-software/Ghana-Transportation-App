@@ -10,6 +10,8 @@ import {
   parseCedisToPesewas,
   translate,
   translations,
+  GHANA_REGIONS,
+  slugify,
 } from '../src';
 
 describe('money', () => {
@@ -104,5 +106,17 @@ describe('translations', () => {
 
   it('fills placeholders', () => {
     expect(translate('en', 'fare.lastChecked', { date: '23 Oct' })).toBe('Last checked 23 Oct');
+  });
+});
+
+describe('places', () => {
+  it('makes slugs from station names, including Twi letters', () => {
+    expect(slugify('Kwame Nkrumah Circle')).toBe('kwame-nkrumah-circle');
+    expect(slugify('  Asafo (Kumasi) ')).toBe('asafo-kumasi');
+    expect(slugify('Kɔforidua Ɛ')).toBe('koforidua-e');
+  });
+
+  it('lists all 16 regions', () => {
+    expect(GHANA_REGIONS).toHaveLength(16);
   });
 });

@@ -20,7 +20,13 @@ create table if not exists auth.users (
 
 create or replace function auth.uid() returns uuid
 language sql stable
-as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+as $$
+  -- Same lookup order as Supabase: legacy per-claim setting, then the claims JSON (PostgREST 9+).
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.sub', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
+  )::uuid
+$$;
 
 create or replace function auth.jwt() returns jsonb
 language sql stable
