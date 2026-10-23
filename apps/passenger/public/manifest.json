@@ -1,0 +1,13 @@
+{
+  "name": "Ghana Transport",
+  "short_name": "GH Transport",
+  "description": "Fares, routes and travel times for every trip in Ghana.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0B6E4F",
+  "icons": [
+    { "src": "/icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}

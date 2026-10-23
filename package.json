@@ -1,0 +1,19 @@
+{
+  "name": "ghana-transport-app",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "passenger": "npm run start -w apps/passenger",
+    "admin": "npm run dev -w apps/admin"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
