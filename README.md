@@ -84,4 +84,4 @@ CI (`.github/workflows/ci.yml`) runs all of these plus the Android and web build
 
 ## Still needed outside the code (Phase 0 exit checklist)
 
-App name (the bundle ID `gh.ghanatransport.app` is a placeholder), Supabase projects per environment, Hubtel/Arkesel accounts and sender ID, Play Console and Expo accounts, Data Protection Commission registration, lawyer-reviewed terms and privacy notice, the verified seed dataset, and native Twi review. See `docs/architecture.md` for the decisions made so far.
+The domain ghanatransport.com.gh (the app ID `gh.com.ghanatransport.app` is based on it and cannot change after the first Play Store upload), Supabase projects per environment, Hubtel/Arkesel accounts and sender ID, Play Console and Expo accounts, Data Protection Commission registration, lawyer-reviewed terms and privacy notice, the verified seed dataset, and native Twi review. See `docs/architecture.md` for the decisions made so far.
