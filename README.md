@@ -40,6 +40,8 @@ scripts/test-db.sh  Applies migrations to a fresh database and runs the access-r
 
 ## Run it locally
 
+To connect a hosted Supabase project instead of the local stack, follow `docs/supabase-setup.md`.
+
 Requirements: Node 22, Docker (for the local Supabase stack), and the Expo Go app or an Android emulator.
 
 ```bash
