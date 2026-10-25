@@ -13,6 +13,10 @@ Do them on your own computer, with Node 22 and this repository cloned (`npm inst
 
 ## 1. Load the database
 
+**Easiest (no tools to install):** open `supabase/setup-dev.sql` on GitHub and click **Copy raw file**. In the Supabase dashboard, open **SQL Editor → New query**, paste, and click **Run**. The last line of the result should say *"Ghana Transport database is ready: 5 stations, 4 fares"*. Use this only for the dev project, because it includes sample data.
+
+**Or with the Supabase CLI:**
+
 ```bash
 npx supabase login                                     # opens the browser
 npx supabase link --project-ref hdlyqptnrpaergvzpgks   # asks for the database password

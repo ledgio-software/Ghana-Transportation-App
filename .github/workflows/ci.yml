@@ -55,6 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get install -y postgresql-client
+      - name: supabase/setup-dev.sql matches the migrations
+        run: scripts/build-dev-setup-sql.sh && git diff --exit-code supabase/setup-dev.sql
       - run: scripts/test-db.sh
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
