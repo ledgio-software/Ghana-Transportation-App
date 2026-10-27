@@ -11,6 +11,8 @@ export interface StationRow {
   kind: 'lorry_station' | 'bus_terminal' | 'airport' | 'stop';
   city: string;
   region: string | null;
+  latitude: number;
+  longitude: number;
 }
 
 /** One row of the search_fares(origin, destination) RPC. */

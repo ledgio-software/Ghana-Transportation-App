@@ -73,6 +73,14 @@ export const en = {
   'alerts.changed': '{vehicle}: {old} → {new}',
   'alerts.view': 'See fares',
 
+  'map.title': 'Route',
+  'map.show': 'Show route on map',
+  'map.hide': 'Hide map',
+  'map.dataNote': 'The map uses mobile data.',
+  'map.mapOf': 'Map of the route from {from} to {to}',
+  'map.open': 'Open directions in Google Maps',
+  'map.walk': 'Walking directions to {station}',
+
   'legal.title': 'Before you report',
   'legal.intro': 'To send reports you need to agree to our terms of use and privacy notice. In short:',
   'legal.point1': 'We keep your phone number to stop fake reports. We never sell your data.',

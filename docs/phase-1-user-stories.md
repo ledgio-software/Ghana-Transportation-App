@@ -20,14 +20,14 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-FARE Fare directory | 4 | 2 | 0 | 2 | Device lab for speed and data targets |
 | P1-ALERT Fair price check | 2 | 1 | 1 | 0 | Device test on a 2 GB phone |
 | P1-REPORT Crowd reports | 5 | 4 | 0 | 1 | — |
-| P1-TRIP Route and ETA | 3 | 0 | 0 | 3 | Google Maps Platform account |
+| P1-TRIP Route and ETA | 3 | 0 | 2 | 1 | Google Maps Embed key (map inside the app); Routes API through an Edge Function (ETA) |
 | P1-WX Weather | 2 | 0 | 0 | 2 | Weather API account; GMet alert feed |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
 | P1-OFF Offline | 2 | 1 | 1 | 0 | Hazard radar (offline alerts) |
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
 | P1-ADMIN Admin dashboard | 7 | 5 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **41** | **20** | **7** | **14** | |
+| **Total** | **41** | **20** | **9** | **12** | |
 
 ---
 
@@ -157,17 +157,22 @@ As a passenger, I want to report being dropped short or overcharged with the tim
 
 Notes: the database already supports this (`overcharge_reports.kind`, `vehicle_plate`, retention), and moderators see it. Only the app screen is missing.
 
-## P1-TRIP Route and ETA (blocked: Google Maps Platform account)
+## P1-TRIP Route and ETA
 
-### P1-TRIP-01 See the route on a map · Must · Owner: tech lead · **Not started**
-- Given a chosen trip, I see the route on a map. The map only loads when I open it (data use).
+### P1-TRIP-01 See the route on a map · Must · Owner: tech lead · **Built**
+- Given a chosen trip, I see the route on a map. The map only loads when I open it (data use). *maps › the map only loads when asked for, then shows the route*
+- I can open the same directions in Google Maps. *maps › directions open in Google Maps*
+
+Notes: the map inside the app uses the free Google Maps Embed API and needs `EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY`, restricted to the web app's address and to the Embed API. Without it, only the Google Maps link shows. Still to verify: the map on an Android phone, once the key exists.
 
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.
 - Common routes are cached to control Google Maps cost.
 
-### P1-TRIP-03 Walking directions to the station · Should · Owner: product lead · **Not started**
-- From my location, I get walking directions to the right station or loading bay. This is often the hardest part for visitors.
+### P1-TRIP-03 Walking directions to the station · Should · Owner: product lead · **Built**
+- From my location, I get walking directions to the right station or loading bay. This is often the hardest part for visitors. *maps › directions open in Google Maps: … walking to the station*
+
+Notes: Google Maps starts from the phone's location. Directions go to the station's GPS point; loading bays need their own points in the station data (Phase 3 terminal maps).
 
 ## P1-WX Weather (blocked: weather API account)
 
