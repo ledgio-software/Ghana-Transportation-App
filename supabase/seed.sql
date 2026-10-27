@@ -29,6 +29,9 @@ insert into public.stations (id, name, slug, kind, city, region, location) value
     extensions.st_geogfromtext('POINT(-1.6240 6.6950)'))
 on conflict (id) do nothing;
 
+-- Circle sits on the Odaw drain and floods in heavy rain (sample flag for the weather warning).
+update public.stations set flood_prone = true where id = '00000000-0000-4000-8000-000000000201';
+
 insert into public.routes (id, origin_station_id, destination_station_id, kind, corridor, typical_duration_min) values
   ('00000000-0000-4000-8000-000000000301', '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000202', 'intracity', null, 60),
   ('00000000-0000-4000-8000-000000000302', '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000203', 'intracity', null, 20),

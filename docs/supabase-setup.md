@@ -116,3 +116,7 @@ npm run admin       # http://localhost:3000
 4. On the passenger app, save that trip first. The fare change then appears as an alert.
 
 If any step fails, note the step and the error message shown. The function logs are under **Edge Functions → Logs**, and the database errors under **Logs → Postgres**.
+
+## 7. When a new migration is added
+
+If you loaded the database with `setup-dev.sql`, run each new file from `supabase/migrations/` (the ones dated after your last update) in **SQL Editor → New query → Run**, oldest first. With the CLI, `npx supabase db push` does the same. For example, `20261027000100_flood_prone_stations.sql` adds the "Floods in heavy rain" setting used by the weather warnings.

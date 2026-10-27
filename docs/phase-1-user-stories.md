@@ -21,13 +21,13 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-ALERT Fair price check | 2 | 1 | 1 | 0 | Device test on a 2 GB phone |
 | P1-REPORT Crowd reports | 5 | 4 | 0 | 1 | — |
 | P1-TRIP Route and ETA | 3 | 0 | 2 | 1 | Google Maps Embed key (map inside the app); Routes API through an Edge Function (ETA) |
-| P1-WX Weather | 2 | 0 | 0 | 2 | Weather API account; GMet alert feed |
+| P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
 | P1-OFF Offline | 2 | 1 | 1 | 0 | Hazard radar (offline alerts) |
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
 | P1-ADMIN Admin dashboard | 7 | 5 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **41** | **20** | **9** | **12** | |
+| **Total** | **41** | **20** | **11** | **10** | |
 
 ---
 
@@ -174,13 +174,20 @@ Notes: the map inside the app uses the free Google Maps Embed API and needs `EXP
 
 Notes: Google Maps starts from the phone's location. Directions go to the station's GPS point; loading bays need their own points in the station data (Phase 3 terminal maps).
 
-## P1-WX Weather (blocked: weather API account)
+## P1-WX Weather
 
-### P1-WX-01 Weather along the trip · Should · Owner: tech lead · **Not started**
-- I see the weather at the start, along the route, and at my destination for my arrival time.
+### P1-WX-01 Weather along the trip · Should · Owner: tech lead · **Built**
+- I see the weather at the start, along the route, and at my destination for my arrival time. *weather › heavy rain at a flood-prone start*; `packages/shared/test/weather.test.ts`
+- When rain is expected anywhere on the trip, I am told to take an umbrella; on a dry trip I am told no rain is expected. *weather › light rain at the destination*, *weather › dry trip says so*
+- Without a forecast, the fares still show. *weather › no forecast*
 
-### P1-WX-02 Storm warning · Should · Owner: tech lead · **Not started**
-- When heavy rain, flooding or harmattan dust is forecast on my route, I see a warning before I leave.
+Notes: forecasts come from MET Norway (free, no account) through the web app's `/api/weather` function, cached for 30 minutes per place (ADR 0013; `packages/shared/test/weather-api.test.ts`). "Along the route" is the halfway point on trips over 50 km. Arrival uses the route's typical duration until P1-TRIP-02 gives live travel times. Still to verify: the live forecast on the hosted app.
+
+### P1-WX-02 Storm warning · Should · Owner: tech lead · **Built**
+- When heavy rain, flooding or harmattan dust is forecast on my route, I see a warning before I leave. *weather › heavy rain at a flood-prone start: flood warning and umbrella*
+- Stations the field team marks as "Floods in heavy rain" get a flood warning when heavy rain (7.6 mm an hour or more) is forecast there. *admin › stations: edit*; `supabase/tests/rls_test.sql`
+
+Notes: heavy rain and flooding are covered. Harmattan dust and official warnings need the GMet alert feed. The flood warning is based on the rain forecast and the station flag, not an official flood forecast.
 
 ## P1-HAZ Hazard radar (blocked: hotspot data, field drive-through, Twi audio)
 

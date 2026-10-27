@@ -180,8 +180,11 @@ begin
   sid := public.save_station(null, 'Kaneshie', 'kaneshie', 'lorry_station', 'Accra', 'Greater Accra', 5.5660, -0.2360, 'GA-123-4567');
   assert (select round(latitude::numeric, 4) from public.stations where id = sid) = 5.5660, 'latitude stored';
   assert (select round(longitude::numeric, 4) from public.stations where id = sid) = -0.2360, 'longitude stored';
-  perform public.save_station(sid, 'Kaneshie Market', 'kaneshie', 'lorry_station', 'Accra', 'Greater Accra', 5.5670, -0.2370);
+  assert not (select flood_prone from public.stations where id = sid), 'not flood-prone unless marked';
+  perform public.save_station(sid, 'Kaneshie Market', 'kaneshie', 'lorry_station', 'Accra', 'Greater Accra', 5.5670, -0.2370,
+    p_flood_prone => true);
   assert (select name from public.stations where id = sid) = 'Kaneshie Market', 'station updated';
+  assert (select flood_prone from public.stations where id = sid), 'marked flood-prone';
   begin
     -- latitude and longitude swapped: lands outside Ghana
     perform public.save_station(null, 'Swapped', 'swapped', 'stop', 'Accra', null, -0.2360, 5.5660);

@@ -23,6 +23,7 @@ interface Station {
   longitude: number;
   ghanapost_gps: string | null;
   is_active: boolean;
+  flood_prone: boolean;
 }
 
 interface Draft {
@@ -37,6 +38,7 @@ interface Draft {
   longitude: string;
   ghanapost_gps: string;
   is_active: boolean;
+  flood_prone: boolean;
 }
 
 const EMPTY: Draft = {
@@ -51,6 +53,7 @@ const EMPTY: Draft = {
   longitude: '',
   ghanapost_gps: '',
   is_active: true,
+  flood_prone: false,
 };
 
 /** Stations and terminals (Phase 0 doc 4.1): GPS pin, GhanaPostGPS address, canonical spelling. */
@@ -64,7 +67,7 @@ export default function StationsPage() {
   const load = useCallback(async () => {
     const { data, error: err } = await supabase
       .from('stations')
-      .select('id, name, slug, kind, city, region, latitude, longitude, ghanapost_gps, is_active')
+      .select('id, name, slug, kind, city, region, latitude, longitude, ghanapost_gps, is_active, flood_prone')
       .order('city')
       .order('name');
     if (err) setError(describeError(err));
@@ -88,6 +91,7 @@ export default function StationsPage() {
       longitude: String(s.longitude),
       ghanapost_gps: s.ghanapost_gps ?? '',
       is_active: s.is_active,
+      flood_prone: s.flood_prone,
     });
     setSaved(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -114,6 +118,7 @@ export default function StationsPage() {
       p_longitude: longitude,
       p_ghanapost_gps: draft.ghanapost_gps.trim(),
       p_is_active: draft.is_active,
+      p_flood_prone: draft.flood_prone,
     });
     if (err) {
       setError(err.code === '22023' ? 'Those coordinates are outside Ghana. Check that latitude and longitude are not swapped.' : describeError(err));
@@ -187,6 +192,10 @@ export default function StationsPage() {
           <input type="checkbox" checked={draft.is_active} onChange={(e) => setDraft((d) => ({ ...d, is_active: e.target.checked }))} />
           Shown in the app
         </label>
+        <label className="check">
+          <input type="checkbox" checked={draft.flood_prone} onChange={(e) => setDraft((d) => ({ ...d, flood_prone: e.target.checked }))} />
+          Floods in heavy rain (the app warns travellers)
+        </label>
         <div className="row full">
           <button type="submit">{draft.id ? 'Save changes' : 'Add station'}</button>
           {draft.id && (
@@ -217,7 +226,8 @@ export default function StationsPage() {
             {shown.map((s) => (
               <tr key={s.id}>
                 <td>
-                  {s.name} {!s.is_active && <span className="pill">hidden</span>}
+                  {s.name} {!s.is_active && <span className="pill">hidden</span>}{' '}
+                  {s.flood_prone && <span className="pill">floods</span>}
                 </td>
                 <td>{s.city}</td>
                 <td>{KINDS.find((k) => k.value === s.kind)?.label ?? s.kind}</td>
