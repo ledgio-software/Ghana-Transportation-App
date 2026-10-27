@@ -42,6 +42,16 @@ export function useI18n(): I18n {
 }
 
 /** Short date in the user's language, Accra time (stored as UTC, shown in Africa/Accra). */
+/** "3:40 pm" in Ghana time. */
+export function formatTime(date: Date, lang: Language): string {
+  return date.toLocaleTimeString(lang === 'tw' ? 'en-GH' : 'en-GB', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Africa/Accra',
+  });
+}
+
 export function formatDate(iso: string, lang: Language): string {
   return new Date(iso).toLocaleDateString(lang === 'tw' ? 'en-GH' : 'en-GB', {
     day: 'numeric',

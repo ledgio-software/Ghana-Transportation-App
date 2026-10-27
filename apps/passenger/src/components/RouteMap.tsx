@@ -1,7 +1,6 @@
 import { googleMapsDirectionsUrl, googleMapsEmbedUrl, type StationRow } from '@gta/shared';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { loadStations } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { colors, font, space } from '../lib/theme';
 import { MapFrame } from './MapFrame';
@@ -14,20 +13,9 @@ const EMBED_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
  * P1-TRIP-01 and P1-TRIP-03: the route on a map, loaded only when asked for (data use),
  * plus Google Maps directions for the trip and for walking to the station.
  */
-export function RouteMap({ fromId, toId }: { fromId?: string; toId?: string }) {
+export function RouteMap({ origin, destination }: { origin: StationRow; destination: StationRow }) {
   const { t } = useI18n();
-  const [stations, setStations] = useState<StationRow[] | null>(null);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    loadStations()
-      .then((res) => setStations(res.data))
-      .catch(() => setStations([]));
-  }, []);
-
-  const origin = stations?.find((station) => station.id === fromId);
-  const destination = stations?.find((station) => station.id === toId);
-  if (!origin || !destination) return null;
 
   return (
     <View style={styles.section}>

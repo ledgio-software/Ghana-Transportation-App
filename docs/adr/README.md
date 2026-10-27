@@ -16,3 +16,4 @@ One record per decision required by Phase 0 doc 7.4. Status: Accepted, Proposed 
 | 0010 | [SMS vendors and failover](0010-sms-vendors.md) | Accepted |
 | 0011 | [Analytics and privacy rules for events](0011-analytics-privacy.md) | Proposed |
 | 0012 | [Data retention periods](0012-retention.md) | Proposed (needs lawyer) |
+| 0013 | [Weather provider](0013-weather.md) | Accepted |

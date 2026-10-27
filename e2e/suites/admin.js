@@ -35,8 +35,12 @@ module.exports = {
     await step('stations: edit', async () => {
       await page.getByRole('row', { name: /Kaneshie/ }).getByRole('button', { name: 'Edit' }).click();
       await page.getByLabel('Name (agreed spelling)').fill('Kaneshie Market');
+      await page.getByLabel('Floods in heavy rain (the app warns travellers)').check();
       await page.getByRole('button', { name: 'Save changes' }).click();
       await page.getByText('Saved Kaneshie Market.').waitFor();
+      await page.getByRole('row', { name: /Kaneshie Market/ }).getByText('floods').waitFor();
+      const flag = sql("select flood_prone from stations where slug = 'kaneshie'");
+      if (flag !== 't') throw new Error(`flood_prone ${flag}`);
     });
     await step('operators and sources: add', async () => {
       await page.getByRole('link', { name: 'Operators & sources' }).click();

@@ -13,6 +13,8 @@ export interface StationRow {
   region: string | null;
   latitude: number;
   longitude: number;
+  /** Floods in heavy rain: the trip weather warns about it. */
+  flood_prone: boolean;
 }
 
 /** One row of the search_fares(origin, destination) RPC. */

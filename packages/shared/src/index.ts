@@ -9,5 +9,6 @@ export * from './csv';
 export * from './imports';
 export * from './legal';
 export * from './maps';
+export * from './weather';
 export * from './i18n';
 export type * from './database';

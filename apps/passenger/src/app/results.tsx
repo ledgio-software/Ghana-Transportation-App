@@ -1,11 +1,12 @@
-import { checkFare, type FareOption, formatPesewas, parseCedisToPesewas } from '@gta/shared';
+import { checkFare, type FareOption, formatPesewas, parseCedisToPesewas, type StationRow } from '@gta/shared';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { FareCard } from '../components/FareCard';
 import { RouteMap } from '../components/RouteMap';
+import { TripWeather } from '../components/TripWeather';
 import { Body, Button, Loading, Notice, Screen, Title } from '../components/ui';
-import { searchFares } from '../lib/api';
+import { loadStations, searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
 import { useConsents } from '../lib/consent';
@@ -37,6 +38,19 @@ export default function ResultsScreen() {
 
   useEffect(load, [load]);
 
+  // Coordinates for the weather and the map (saved on the phone, like the station list).
+  const [stations, setStations] = useState<StationRow[] | null>(null);
+  useEffect(() => {
+    loadStations()
+      .then((res) => setStations(res.data))
+      .catch(() => setStations([]));
+  }, []);
+  const origin = useMemo(() => stations?.find((s) => s.id === from), [stations, from]);
+  const destination = useMemo(() => stations?.find((s) => s.id === to), [stations, to]);
+  const durations = fares?.map((f) => f.typical_duration_min).filter((d): d is number => d != null) ?? [];
+  // Without a typical duration, assume an hour: the arrival window is two hours wide anyway.
+  const durationMin = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 60;
+
   return (
     <Screen>
       {title ? <Stack.Screen options={{ title }} /> : null}
@@ -49,6 +63,9 @@ export default function ResultsScreen() {
       )}
       {!fares && !failed && <Loading label={t('common.loading')} />}
       {fares && fares.length === 0 && <Body>{t('fare.none')}</Body>}
+      {fares && fares.length > 0 && origin && destination && (
+        <TripWeather origin={origin} destination={destination} durationMin={durationMin} />
+      )}
       {fares && fares.length > 0 && <SaveTrip from={from} to={to} routeIds={[...new Set(fares.map((f) => f.route_id))]} />}
       {fares?.map((fare) => (
         <View key={fare.fare_id} style={styles.option}>
@@ -74,7 +91,7 @@ export default function ResultsScreen() {
           <FareCheck fare={fare} reportsOn={reportsOn} />
         </View>
       ))}
-      {fares && <RouteMap fromId={from} toId={to} />}
+      {fares && origin && destination && <RouteMap origin={origin} destination={destination} />}
     </Screen>
   );
 }
