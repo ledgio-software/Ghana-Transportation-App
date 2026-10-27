@@ -21,7 +21,7 @@ API_URL="http://localhost:$(node -e "console.log(require('./e2e/lib').API_PORT)"
 BUILD_DIR=$(mktemp -d)
 
 if [ -z "${SKIP_BUILD:-}" ]; then
-  (cd apps/passenger && EXPO_PUBLIC_SUPABASE_URL="$API_URL" EXPO_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" EXPO_OFFLINE=1 CI=1 \
+  (cd apps/passenger && EXPO_PUBLIC_SUPABASE_URL="$API_URL" EXPO_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY=e2e-maps-key EXPO_OFFLINE=1 CI=1 \
     npx expo export --platform web --output-dir "$BUILD_DIR/passenger" >/dev/null)
   (cd apps/admin && NEXT_PUBLIC_SUPABASE_URL="$API_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" NEXT_TELEMETRY_DISABLED=1 \
     npx next build >/dev/null && cp -r out "$BUILD_DIR/admin" && rm -rf out)

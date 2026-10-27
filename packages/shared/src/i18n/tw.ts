@@ -75,6 +75,14 @@ export const tw: Translations = {
   'alerts.changed': '{vehicle}: {old} → {new}',
   'alerts.view': 'Hwɛ lɔre ka',
 
+  'map.title': 'Kwan no',
+  'map.show': 'Kyerɛ kwan no wɔ map so',
+  'map.hide': 'Fa map no sie',
+  'map.dataNote': 'Map no de data di dwuma.',
+  'map.mapOf': 'Kwan a ɛfiri {from} kɔ {to} wɔ map so',
+  'map.open': 'Bue kwan no wɔ Google Maps mu',
+  'map.walk': 'Nantew kwan kɔ {station}',
+
   'legal.title': 'Ansa na woaka amaneɛ',
   'legal.intro': 'Sɛ wobɛsoma amaneɛbɔ a, ɛsɛ sɛ wopene yɛn mmara ne yɛn kokoam nhyehyɛeɛ so. Ne tiawa ne sɛ:',
   'legal.point1': 'Yɛkora wo fon nɔma de siw amaneɛbɔ a ɛnyɛ nokware ano. Yɛntɔn wo nsɛm da.',

@@ -3,6 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { FareCard } from '../components/FareCard';
+import { RouteMap } from '../components/RouteMap';
 import { Body, Button, Loading, Notice, Screen, Title } from '../components/ui';
 import { searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
@@ -73,6 +74,7 @@ export default function ResultsScreen() {
           <FareCheck fare={fare} reportsOn={reportsOn} />
         </View>
       ))}
+      {fares && <RouteMap fromId={from} toId={to} />}
     </Screen>
   );
 }

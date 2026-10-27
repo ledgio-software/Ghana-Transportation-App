@@ -22,10 +22,10 @@ async function onlineThenCache<T>(key: string, fetcher: () => Promise<T>): Promi
 }
 
 export function loadStations(): Promise<Loaded<StationRow[]>> {
-  return onlineThenCache('stations:v1', async () => {
+  return onlineThenCache('stations:v2', async () => {
     const { data, error } = await supabase
       .from('stations')
-      .select('id, name, slug, kind, city, region')
+      .select('id, name, slug, kind, city, region, latitude, longitude')
       .eq('is_active', true)
       .order('city')
       .order('name');

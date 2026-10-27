@@ -8,5 +8,6 @@ export * from './flags';
 export * from './csv';
 export * from './imports';
 export * from './legal';
+export * from './maps';
 export * from './i18n';
 export type * from './database';
