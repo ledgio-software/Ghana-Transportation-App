@@ -30,7 +30,19 @@
       "themeColor": "#0B6E4F",
       "backgroundColor": "#FFFFFF"
     },
-    "plugins": ["expo-router", "expo-sqlite", "expo-localization"],
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ghana Transport uses your photos so you can attach a picture of a vehicle to a report.",
+          "cameraPermission": "Ghana Transport uses the camera so you can photograph a vehicle for a report.",
+          "microphonePermission": false
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": false
     }

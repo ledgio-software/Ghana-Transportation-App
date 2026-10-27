@@ -40,6 +40,9 @@ export default function SearchScreen() {
 
   return (
     <Screen>
+      <Pressable accessibilityRole="button" style={styles.sos} onPress={() => router.push('/emergency')}>
+        <Text style={styles.sosText}>{t('sos.button')}</Text>
+      </Pressable>
       <Title>{t('search.title')}</Title>
       {waiting > 0 && <Notice>{t('report.pending', { count: waiting })}</Notice>}
       {unread > 0 && (
@@ -94,11 +97,23 @@ export default function SearchScreen() {
           ))}
         </>
       )}
+      <Title>{t('safety.title')}</Title>
+      <Button label={t('driver.report')} variant="secondary" onPress={() => router.push('/report-driver')} />
+      <Button label={t('rate.button')} variant="secondary" onPress={() => router.push('/rate-driver')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  sos: {
+    minHeight: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: space.md,
+    borderRadius: 10,
+    backgroundColor: colors.danger,
+  },
+  sosText: { fontSize: font.body, fontWeight: '700', color: colors.primaryText },
   trip: {
     minHeight: 52,
     justifyContent: 'center',

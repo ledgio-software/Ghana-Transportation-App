@@ -93,6 +93,9 @@ function AppStack() {
         <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
         <Stack.Screen name="alerts" options={{ title: t('alerts.title') }} />
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
+        <Stack.Screen name="emergency" options={{ title: t('sos.title') }} />
+        <Stack.Screen name="report-driver" options={{ title: t('driver.reportTitle') }} />
+        <Stack.Screen name="rate-driver" options={{ title: t('rate.title') }} />
       </Stack>
     </VersionGate>
   );

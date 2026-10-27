@@ -3,7 +3,7 @@
  * Every item carries a client_id the server stores with a unique constraint, so sending the
  * same item twice can never create two reports.
  */
-export type OutboxKind = 'fare_report' | 'overcharge_report';
+export type OutboxKind = 'fare_report' | 'overcharge_report' | 'driver_report' | 'driver_rating';
 
 export interface OutboxItem {
   client_id: string;

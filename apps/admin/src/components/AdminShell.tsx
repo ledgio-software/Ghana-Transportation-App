@@ -12,6 +12,7 @@ const NAV = [
   { href: '/routes', label: 'Routes' },
   { href: '/operators', label: 'Operators & sources' },
   { href: '/reports', label: 'Reports' },
+  { href: '/safety', label: 'Safety' },
   { href: '/import', label: 'Import' },
 ];
 

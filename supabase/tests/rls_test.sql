@@ -391,4 +391,119 @@ do $$ begin
   assert (public.purge_expired_data() ->> 'notifications_deleted')::int = 1, 'old alert deleted';
 end $$;
 
+-- Safety: emergency numbers are public; staff edit them.
+set role anon;
+do $$ begin
+  assert (select phone from public.emergency_contacts order by sort_order limit 1) = '112', '112 listed first';
+  begin
+    insert into public.emergency_contacts (name, phone, kind) values ('Fake', '0000', 'police');
+    raise exception 'anon added an emergency number';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+set request.jwt.claims = '{"aal": "aal2"}';
+insert into public.emergency_contacts (name, phone, kind, sort_order) values ('MTTD Accra (test)', '0302000000', 'road_safety', 60);
+do $$ begin
+  begin
+    insert into public.emergency_contacts (name, phone, kind) values ('Bad number', 'call me', 'police');
+    raise exception 'letters accepted as a phone number';
+  exception when check_violation then null;
+  end;
+end $$;
+reset role;
+reset request.jwt.claims;
+
+-- Driver reports: own photos only, then staff forward them; the reporter cannot change status.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a002';
+insert into storage.objects (bucket_id, name) values ('report-photos', '00000000-0000-4000-8000-00000000a002/r1/1.jpg');
+do $$ begin
+  begin
+    insert into storage.objects (bucket_id, name) values ('report-photos', '00000000-0000-4000-8000-00000000a001/x.jpg');
+    raise exception 'uploaded into someone else''s folder';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+insert into public.driver_reports (client_id, kind, vehicle_plate, occurred_at, note, photo_paths)
+values ('00000000-0000-4000-8000-0000000dd001', 'reckless_driving', 'GR 1234-24', now(), 'Overtaking on a curve',
+        array['00000000-0000-4000-8000-00000000a002/r1/1.jpg']);
+do $$ begin
+  begin
+    insert into public.driver_reports (client_id, kind, occurred_at, photo_paths)
+    values (gen_random_uuid(), 'abuse', now(), array['00000000-0000-4000-8000-00000000a001/x.jpg']);
+    raise exception 'report used someone else''s photo';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    insert into public.driver_reports (client_id, kind, occurred_at, status) values (gen_random_uuid(), 'abuse', now(), 'forwarded');
+    raise exception 'reporter set the status';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.handle_driver_report((select id from public.driver_reports where client_id = '00000000-0000-4000-8000-0000000dd001'), 'closed', null, null);
+    raise exception 'reporter handled their own report';
+  exception when insufficient_privilege then null;
+  end;
+  insert into public.driver_ratings (client_id, rating, tags, travelled_at) values (gen_random_uuid(), 5, array['safe_driving', 'polite'], now());
+  begin
+    insert into public.driver_ratings (client_id, rating, travelled_at) values (gen_random_uuid(), 6, now());
+    raise exception 'rating 6 accepted';
+  exception when check_violation then null;
+  end;
+  begin
+    insert into public.driver_ratings (client_id, rating, tags, travelled_at) values (gen_random_uuid(), 3, array['made_up'], now());
+    raise exception 'unknown tag accepted';
+  exception when check_violation then null;
+  end;
+  assert jsonb_array_length(public.export_my_data() -> 'driver_reports') = 1, 'report in data export';
+  assert jsonb_array_length(public.export_my_data() -> 'driver_ratings') = 1, 'rating in data export';
+end $$;
+-- Passenger A withdrew agreement above, so cannot report a driver; nor see B's report or photo.
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a001';
+do $$ begin
+  begin
+    insert into public.driver_reports (client_id, kind, occurred_at) values (gen_random_uuid(), 'abuse', now());
+    raise exception 'report without agreement accepted';
+  exception when insufficient_privilege then null;
+  end;
+  assert (select count(*) from public.driver_reports) = 0, 'cannot see other people''s driver reports';
+  assert (select count(*) from storage.objects where bucket_id = 'report-photos') = 0, 'cannot see other people''s photos';
+end $$;
+-- Moderator with two-factor sees it with its photo and forwards it.
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a004';
+set request.jwt.claims = '{"aal": "aal2"}';
+do $$ begin
+  assert (select count(*) from storage.objects where bucket_id = 'report-photos') = 1, 'moderator sees the photo';
+  begin
+    perform public.handle_driver_report((select id from public.driver_reports where client_id = '00000000-0000-4000-8000-0000000dd001'), 'forwarded', ' ', null);
+    raise exception 'forwarded without saying to whom';
+  exception when invalid_parameter_value then null;
+  end;
+  perform public.handle_driver_report((select id from public.driver_reports where client_id = '00000000-0000-4000-8000-0000000dd001'), 'forwarded', 'MTTD Accra', 'Called the desk');
+  assert (select status || '|' || forwarded_to || '|' || staff_note from public.driver_reports) = 'forwarded|MTTD Accra|Called the desk', 'forwarded';
+  assert (select count(*) from public.driver_ratings) = 1, 'moderator sees ratings';
+end $$;
+reset role;
+reset request.jwt.claims;
+
+-- After 90 days: reporter and plate removed; photos listed for deletion, then forgotten.
+update public.driver_reports set created_at = now() - interval '91 days';
+do $$ begin
+  assert (public.purge_expired_data() ->> 'driver_reports_anonymised')::int = 1, 'driver report anonymised';
+  assert (select user_id is null and vehicle_plate is null from public.driver_reports), 'reporter and plate removed';
+end $$;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a004';
+set request.jwt.claims = '{"aal": "aal2"}';
+do $$ begin
+  assert (select count(*) from public.expired_report_photos()) = 1, 'expired photo listed';
+  assert public.forget_report_photos(array[(select id from public.driver_reports where client_id = '00000000-0000-4000-8000-0000000dd001')]) = 1, 'photo paths cleared';
+  assert (select count(*) from public.expired_report_photos()) = 0, 'nothing left to delete';
+end $$;
+reset role;
+reset request.jwt.claims;
+
 \echo 'All database checks passed'
