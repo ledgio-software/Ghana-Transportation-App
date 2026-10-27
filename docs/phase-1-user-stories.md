@@ -23,11 +23,12 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-TRIP Route and ETA | 3 | 0 | 2 | 1 | Google Maps Embed key (map inside the app); Routes API through an Edge Function (ETA) |
 | P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
+| P1-SAFE Safety | 4 | 2 | 2 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check |
 | P1-OFF Offline | 2 | 1 | 1 | 0 | Hazard radar (offline alerts) |
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
 | P1-ADMIN Admin dashboard | 7 | 5 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **41** | **20** | **11** | **10** | |
+| **Total** | **45** | **22** | **13** | **10** | |
 
 ---
 
@@ -203,6 +204,30 @@ Notes: the database side exists (`hazard_reports`, moderation, `live_hazard_repo
 
 ### P1-HAZ-03 Diversion when a road is closed · Should · Owner: data lead · **Not started**
 - When a closure is reported on a hotspot, I see the tested diversion route.
+
+## P1-SAFE Safety (requested by management, October 2026)
+
+### P1-SAFE-01 Emergency numbers · Must · Owner: product lead · **Built**
+- From the home screen, in one tap, I see the police, fire and ambulance numbers and can call one with another tap. Works signed out. *safety › emergency numbers: one tap to call*
+- The numbers show with no signal (saved on the phone; a built-in list before the first load). *safety › emergency numbers still show with no signal*; `packages/shared/test/safety.test.ts`
+- Staff can add, edit and hide numbers (for example MTTD, NRSA and bus company lines). *safety-admin › emergency numbers*; `supabase/tests/rls_test.sql`
+
+Notes: 112 is listed first (the national number since 2020); 191, 18555, 192 and 193 follow because they are still widely published. Still to verify: a person calls each number before launch, and staff add the MTTD and NRSA lines once confirmed.
+
+### P1-SAFE-02 Report a driver, with photos · Must · Owner: product lead · **Built**
+- I can report reckless or drunk driving, abuse or harassment of passengers, overloading or an unsafe vehicle, with the plate, a note and up to 3 photos of the vehicle. *safety › report a driver with a photo of the vehicle*
+- If the photos cannot be sent, nothing is saved and I am told why; without photos the report waits on the phone like other reports. *safety › a failed photo upload keeps the form and says why*
+- I can only attach my own photos, and nobody but staff can see them. `supabase/tests/rls_test.sql`
+
+Notes: photos live in the private `report-photos` bucket (5 MB each). Reports and plates are anonymised after 90 days; staff delete photos older than 90 days with one button in the admin (ADR 0014). Still to verify: an upload to the hosted Supabase Storage.
+
+### P1-SAFE-03 Rate the driver · Should · Owner: product lead · **Done**
+- After a trip I rate the driver from 1 to 5 stars and pick quick tags (praise for 4 to 5 stars, complaints for 1 to 2). Works offline. *safety › rate the driver from the results screen*
+- A rating of 1 or 2 offers to report the driver. *safety › a bad rating offers to report the driver*
+
+### P1-SAFE-04 Staff forward driver reports · Must · Owner: operations lead · **Done**
+- Staff see each report with its photos, and record who they forwarded it to (MTTD, NRSA, the operator), close it or reject it. Reporters' details are never shown. *safety-admin › driver report shows with its photo; forwarding needs a recipient*
+- Staff see recent ratings and the average. *safety-admin › ratings with the average*
 
 ## P1-OFF Offline
 

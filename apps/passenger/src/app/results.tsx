@@ -92,7 +92,23 @@ export default function ResultsScreen() {
         </View>
       ))}
       {fares && origin && destination && <RouteMap origin={origin} destination={destination} />}
+      {fares && fares.length > 0 && <TripSafety routeId={fares[0]!.route_id} label={title} />}
     </Screen>
+  );
+}
+
+/** P1-SAFE: rate the driver or report one, for this route. */
+function TripSafety({ routeId, label }: { routeId: string; label?: string }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const params = { route_id: routeId, label: label ?? '' };
+  return (
+    <View style={styles.save}>
+      <Title>{t('safety.title')}</Title>
+      <Button label={t('rate.button')} variant="secondary" onPress={() => router.push({ pathname: '/rate-driver', params })} />
+      <Button label={t('driver.report')} variant="secondary" onPress={() => router.push({ pathname: '/report-driver', params })} />
+      <Button label={t('sos.title')} variant="secondary" onPress={() => router.push('/emergency')} />
+    </View>
   );
 }
 

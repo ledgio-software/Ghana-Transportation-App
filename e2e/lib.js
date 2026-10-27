@@ -106,7 +106,7 @@ function stepper(page, outDir, suite) {
         console.log(`  ok    ${name}`);
       } catch (err) {
         results.push({ suite, name, ok: false });
-        console.log(`  FAIL  ${name}: ${String(err.message).split('\n')[0]}`);
+        console.log(`  FAIL  ${name}: ${process.env.E2E_VERBOSE ? err.message : String(err.message).split("\n")[0]}`);
         await page.screenshot({ path: `${outDir}/fail-${suite}-${name.replace(/\W+/g, '-')}.png`, fullPage: true }).catch(() => {});
       }
     },

@@ -8,6 +8,8 @@ const KEY = 'outbox:v1';
 const TABLES: Record<OutboxKind, string> = {
   fare_report: 'fare_reports',
   overcharge_report: 'overcharge_reports',
+  driver_report: 'driver_reports',
+  driver_rating: 'driver_ratings',
 };
 
 const listeners = new Set<() => void>();

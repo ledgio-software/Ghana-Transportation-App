@@ -41,3 +41,7 @@ label.check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
 td.num { font-variant-numeric: tabular-nums; }
 .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--surface); font-size: 13px; }
 td button { white-space: nowrap; }
+section.card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+section.card h2 { margin-top: 0; }
+.row.wrap { flex-wrap: wrap; align-items: end; }
+img.thumb { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
