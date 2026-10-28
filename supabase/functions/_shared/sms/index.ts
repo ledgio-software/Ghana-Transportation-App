@@ -1,5 +1,6 @@
 import { ArkeselSmsProvider } from './arkesel.ts';
 import { HubtelSmsProvider } from './hubtel.ts';
+import { SmsGateProvider } from './smsgate.ts';
 import type { SmsMessage, SmsProvider } from './types.ts';
 
 export type { SmsMessage, SmsProvider } from './types.ts';
@@ -43,7 +44,7 @@ export class ConsoleSmsProvider implements SmsProvider {
   }
 }
 
-/** Builds the provider chain from environment secrets: Hubtel first, then Arkesel. */
+/** Builds the provider chain from environment secrets: Hubtel, then Arkesel, then SMSGate. */
 export function smsProviderFromEnv(env: { get(key: string): string | undefined }): SmsProvider {
   const senderId = env.get('SMS_SENDER_ID') ?? 'GhTransport';
   const providers: SmsProvider[] = [];
@@ -55,9 +56,14 @@ export function smsProviderFromEnv(env: { get(key: string): string | undefined }
   const arkeselKey = env.get('ARKESEL_API_KEY');
   if (arkeselKey) providers.push(new ArkeselSmsProvider(arkeselKey, senderId));
 
+  // Free gateway through an Android phone, for testing; last, so paid gateways come first once added.
+  const gateUser = env.get('SMSGATE_USERNAME');
+  const gatePassword = env.get('SMSGATE_PASSWORD');
+  if (gateUser && gatePassword) providers.push(new SmsGateProvider(gateUser, gatePassword, env.get('SMSGATE_URL') ?? undefined));
+
   if (providers.length === 0) {
     if (env.get('SMS_ALLOW_CONSOLE') === 'true') return new ConsoleSmsProvider();
-    throw new Error('no SMS provider configured: set HUBTEL_* and/or ARKESEL_API_KEY');
+    throw new Error('no SMS provider configured: set HUBTEL_*, ARKESEL_API_KEY and/or SMSGATE_*');
   }
   return new FailoverSmsProvider(providers);
 }

@@ -40,7 +40,19 @@ npx supabase db push --include-seed                    # all migrations + sample
 4. **Authentication → Multi-Factor:** make sure **TOTP (authenticator app)** is enabled. Staff need it; the database refuses staff changes without it.
 5. **Authentication → URL Configuration:** for local testing, set Site URL to `http://localhost:3000` (the admin).
 
-## 3. Deploy the edge functions
+## 3. Send sign-in codes
+
+### Option A (no command line): SMSGate through the website
+
+For testing and the first users, sign-in codes go through an Android phone running the free [SMSGate](https://sms-gate.app) app, via the website's `/api/send-sms` function on Vercel. Each code is sent from that phone's own number and uses its SMS credit, so the phone must stay on, online and topped up.
+
+1. On the Android phone, install SMSGate, turn on **Cloud server**, and keep **Start on boot** on. The card shows a username and a password. They are private: never put them in the code or in chat.
+2. In step 2.3, set the hook URL to `https://ghana-transportation-app-passenger.vercel.app/api/send-sms` instead of the Edge Function.
+3. In **Vercel → ghana-transportation-app-passenger → Settings → Environment Variables**, add `SEND_SMS_HOOK_SECRET` (the `v1,whsec_…` secret from step 2.3), `SMSGATE_USERNAME` and `SMSGATE_PASSWORD`. Then go to **Deployments → ⋯ → Redeploy**.
+
+**Check:** sign in with your own number; the code arrives from the SMSGate phone's number. If it does not, **Vercel → Logs** shows `send-sms:` lines (with only the last 3 digits of the number).
+
+### Option B (for launch): the Edge Function with Hubtel or Arkesel
 
 Create `supabase/functions/.env` (copy `supabase/functions/.env.example`) and fill in:
 
@@ -51,6 +63,8 @@ SMS_ALLOW_CONSOLE=true               # dev only: log codes instead of sending, u
 # HUBTEL_CLIENT_ID=                  # add when Hubtel is approved, then remove SMS_ALLOW_CONSOLE
 # HUBTEL_CLIENT_SECRET=
 # ARKESEL_API_KEY=
+# SMSGATE_USERNAME=                  # optional: SMSGate as the last fallback
+# SMSGATE_PASSWORD=
 ```
 
 Then:
