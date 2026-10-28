@@ -164,7 +164,7 @@ Notes: the database already supports this (`overcharge_reports.kind`, `vehicle_p
 - Given a chosen trip, I see the route on a map. The map only loads when I open it (data use). *maps › the map only loads when asked for, then shows the route*
 - I can open the same directions in Google Maps. *maps › directions open in Google Maps*
 
-Notes: the map inside the app uses the free Google Maps Embed API and needs `EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY`, restricted to the web app's address and to the Embed API. Without it, only the Google Maps link shows. Still to verify: the map on an Android phone, once the key exists.
+Notes: the map inside the app uses the free Google Maps Embed API and needs `EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY`, restricted to the web app's address and to the Embed API. Without it, only the Google Maps link shows. The key for the hosted web app (Google Cloud project `ghana-transport`) is in `apps/passenger/.env.production`. Still to verify: the map on an Android phone.
 
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.
