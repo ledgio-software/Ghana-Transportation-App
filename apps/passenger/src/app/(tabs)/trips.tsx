@@ -1,7 +1,10 @@
+import type { StationRow } from '@gta/shared';
 import { useRouter } from 'expo-router';
-import { TripCard } from '../../components/TripCard';
+import { useEffect, useState } from 'react';
+import { SavedTripCard } from '../../components/TripCard';
 import { Body, Button, Card, Notice, Screen, Title } from '../../components/ui';
 import { useAlerts } from '../../lib/alerts';
+import { loadStations } from '../../lib/api';
 import { useI18n } from '../../lib/i18n';
 import { useOutboxCount } from '../../lib/outbox';
 import { useSavedTrips } from '../../lib/saved';
@@ -13,6 +16,12 @@ export default function TripsTab() {
   const { trips, signedIn } = useSavedTrips();
   const { unread } = useAlerts();
   const waiting = useOutboxCount();
+  const [stations, setStations] = useState<StationRow[] | null>(null);
+  useEffect(() => {
+    loadStations()
+      .then((res) => setStations(res.data))
+      .catch(() => setStations([]));
+  }, []);
 
   return (
     <Screen>
@@ -31,12 +40,12 @@ export default function TripsTab() {
           <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
         </Card>
       )}
-      {signedIn && trips.length === 0 && <Body muted>{t('saved.none')}</Body>}
+      {trips.length === 0 && <Body muted>{t('saved.none')}</Body>}
       {trips.map((trip) => (
-        <TripCard
+        <SavedTripCard
           key={`${trip.originId}:${trip.destinationId}`}
-          from={trip.originName}
-          to={trip.destinationName}
+          trip={trip}
+          stations={stations}
           onPress={() =>
             router.push({
               pathname: '/results',

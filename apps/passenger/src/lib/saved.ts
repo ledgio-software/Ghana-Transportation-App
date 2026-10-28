@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { useSession } from './session';
 import { readCache, writeCache } from './storage';
 import { supabase } from './supabase';
@@ -34,15 +35,31 @@ function group(rows: SavedRow[]): SavedTrip[] {
   return [...trips.values()];
 }
 
-/** The signed-in user's saved trips; shows the copy saved on the phone while offline. */
+const LOCAL_KEY = 'saved:local:v1';
+const sameTrip = (a: SavedTrip, b: SavedTrip) => a.originId === b.originId && a.destinationId === b.destinationId;
+const readLocal = () => readCache<SavedTrip[]>(LOCAL_KEY)?.value ?? [];
+
+/**
+ * Saved trips. Signed in: kept on the account (fare-change alerts), with the copy saved on the
+ * phone shown while offline. Signed out: kept on this phone only, and moved to the account at
+ * the next sign-in.
+ */
 export function useSavedTrips() {
   const session = useSession();
   const userId = session?.user.id ?? null;
   const cacheKey = `saved:v1:${userId}`;
-  const [trips, setTrips] = useState<SavedTrip[]>(() => (userId ? readCache<SavedTrip[]>(cacheKey)?.value ?? [] : []));
+  const [trips, setTrips] = useState<SavedTrip[]>(() => (userId ? readCache<SavedTrip[]>(cacheKey)?.value ?? [] : readLocal()));
 
   const reload = useCallback(async () => {
-    if (!userId) return setTrips([]);
+    if (!userId) return setTrips(readLocal());
+    const local = readLocal();
+    if (local.length > 0) {
+      const { error } = await supabase.from('saved_routes').upsert(
+        local.flatMap((trip) => trip.routeIds.map((route_id) => ({ route_id }))),
+        { onConflict: 'user_id,route_id', ignoreDuplicates: true },
+      );
+      if (!error) writeCache(LOCAL_KEY, []);
+    }
     const { data, error } = await supabase
       .from('saved_routes')
       .select(
@@ -58,28 +75,41 @@ export function useSavedTrips() {
     setTrips(next);
   }, [userId, cacheKey]);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+  // Again whenever the screen comes back, so a trip saved on another screen shows up.
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload]),
+  );
 
   const save = useCallback(
-    async (routeIds: string[]) => {
+    async (trip: SavedTrip) => {
+      if (!userId) {
+        const next = [...readLocal().filter((t) => !sameTrip(t, trip)), trip];
+        writeCache(LOCAL_KEY, next);
+        return setTrips(next);
+      }
       const { error } = await supabase
         .from('saved_routes')
-        .upsert(routeIds.map((route_id) => ({ route_id })), { onConflict: 'user_id,route_id', ignoreDuplicates: true });
+        .upsert(trip.routeIds.map((route_id) => ({ route_id })), { onConflict: 'user_id,route_id', ignoreDuplicates: true });
       if (error) throw error;
       await reload();
     },
-    [reload],
+    [userId, reload],
   );
 
   const remove = useCallback(
-    async (routeIds: string[]) => {
-      const { error } = await supabase.from('saved_routes').delete().in('route_id', routeIds);
+    async (trip: SavedTrip) => {
+      if (!userId) {
+        const next = readLocal().filter((t) => !sameTrip(t, trip));
+        writeCache(LOCAL_KEY, next);
+        return setTrips(next);
+      }
+      const { error } = await supabase.from('saved_routes').delete().in('route_id', trip.routeIds);
       if (error) throw error;
       await reload();
     },
-    [reload],
+    [userId, reload],
   );
 
   return { trips, save, remove, reload, signedIn: userId != null };
