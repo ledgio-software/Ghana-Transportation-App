@@ -3,12 +3,14 @@ import { formatDistance, formatDuration, googleMapsDirectionsUrl, type LatLng, r
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SharePanel } from '../components/SharePanel';
 import { Body } from '../components/ui';
 import { loadStations } from '../lib/api';
 import { loadGoogleMaps } from '../lib/googleMaps';
 import { useI18n } from '../lib/i18n';
 import { type DrivingRoute, loadDrivingRoute } from '../lib/routes';
-import { colors, font, space } from '../lib/theme';
+import { currentShare, SHARE_EVERY_MS, sendPosition, shareLink, startShare, stopShare, type TripShare } from '../lib/tripShare';
+import { colors, font, ghana, space } from '../lib/theme';
 
 const KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
 
@@ -29,6 +31,11 @@ export default function LiveMapScreen() {
   const [following, setFollowing] = useState(true);
   const mapDiv = useRef<HTMLDivElement | null>(null);
   const map = useRef<{ maps: any; map: any; dot?: any } | null>(null);
+  // P1-SAFE-04: share the trip with family.
+  const [share, setShare] = useState<TripShare | null>(() => (from && to ? currentShare(from, to) : null));
+  const [panel, setPanel] = useState(false);
+  const [shareFailed, setShareFailed] = useState(false);
+  const lastSent = useRef(0);
 
   useEffect(() => {
     loadStations()
@@ -125,6 +132,36 @@ export default function LiveMapScreen() {
     if (following) current.map.panTo(position);
   }, [progress, located, following, route, t]);
 
+  // While sharing, send the position every 20 s; stop by itself on arrival.
+  useEffect(() => {
+    if (!share || located.status !== 'ok') return;
+    if (progress?.arrived) {
+      setShare(null);
+      void stopShare(share).catch(() => undefined);
+      return;
+    }
+    if (Date.now() - lastSent.current < SHARE_EVERY_MS) return;
+    lastSent.current = Date.now();
+    sendPosition(share, located.position)
+      .then((live) => live || setShare(null))
+      .catch(() => undefined);
+  }, [share, located, progress]);
+
+  async function onShare() {
+    if (!from || !to) return;
+    setShareFailed(false);
+    try {
+      if (!share) {
+        const started = await startShare(from, to);
+        lastSent.current = 0;
+        setShare(started);
+      }
+      setPanel(true);
+    } catch {
+      setShareFailed(true);
+    }
+  }
+
   const destinationName = destination?.name ?? '';
   let status: { text: string; tone: 'info' | 'warning' | 'ok' };
   if (failed || !KEY) status = { text: t('live.error'), tone: 'warning' };
@@ -145,12 +182,37 @@ export default function LiveMapScreen() {
         {destination && <Text style={styles.to}>{t('live.to', { place: destinationName })}</Text>}
         <Text style={[styles.status, status.tone === 'warning' && styles.warning, status.tone === 'ok' && styles.ok]}>{status.text}</Text>
         {route && !progress?.arrived && <Body muted>{t(route.approximate ? 'live.noRoad' : 'live.estimate')}</Body>}
+        {share && <Text style={styles.sharing}>{t('share.on')}</Text>}
+        {shareFailed && <Text style={styles.warning}>{t('share.error')}</Text>}
       </View>
       <View style={styles.actions}>
         {!following && located.status === 'ok' && (
           <Pressable accessibilityRole="button" style={styles.action} onPress={() => setFollowing(true)}>
             <Text style={styles.actionText}>{t('live.recenter')}</Text>
           </Pressable>
+        )}
+        {destination && !share && (
+          <Pressable accessibilityRole="button" style={styles.action} onPress={onShare}>
+            <Text style={styles.actionText}>{t('share.button')}</Text>
+          </Pressable>
+        )}
+        {share && (
+          <View style={styles.row}>
+            <Pressable accessibilityRole="button" style={[styles.action, styles.grow]} onPress={() => setPanel(true)}>
+              <Text style={styles.actionText}>{t('share.again')}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              style={[styles.action, styles.grow, styles.secondary]}
+              onPress={() => {
+                setShare(null);
+                setPanel(false);
+                void stopShare(share).catch(() => undefined);
+              }}
+            >
+              <Text style={[styles.actionText, styles.secondaryText]}>{t('share.stop')}</Text>
+            </Pressable>
+          </View>
         )}
         {destination && (
           <Pressable
@@ -162,6 +224,15 @@ export default function LiveMapScreen() {
           </Pressable>
         )}
       </View>
+      {panel && share && (
+        <View style={styles.sheet}>
+          <SharePanel
+            link={shareLink(share.id)}
+            message={t('share.message', { place: destinationName, link: shareLink(share.id) })}
+            onClose={() => setPanel(false)}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -197,4 +268,8 @@ const styles = StyleSheet.create({
   actionText: { fontSize: font.body, fontWeight: '700', color: colors.primaryText },
   secondary: { backgroundColor: colors.background, borderWidth: 2, borderColor: colors.primary },
   secondaryText: { color: colors.primary },
+  sharing: { fontSize: font.small, fontWeight: '700', color: ghana.green },
+  row: { flexDirection: 'row', gap: space.sm },
+  grow: { flex: 1 },
+  sheet: { position: 'absolute', bottom: space.lg, left: space.md, right: space.md },
 });

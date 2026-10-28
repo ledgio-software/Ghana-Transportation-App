@@ -1,64 +1,8 @@
 // P1-TRIP-04: live map with the route line, a moving "you are here" dot and the time left.
-// Google Maps and the /api/route function are replaced by stand-ins, so the tests never call Google.
+// Google Maps and the /api/route function are replaced by stand-ins (../fake-google.js).
 
-const CIRCLE = { latitude: 5.5717, longitude: -0.2166 };
-const MIDWAY = { latitude: 5.553, longitude: -0.3168 };
-const KASOA = { latitude: 5.534, longitude: -0.417 };
+const { CIRCLE, MIDWAY, KASOA, FAKE_MAPS, fakeGoogle } = require('../fake-google');
 const URL_PATH = '/live-map?from=00000000-0000-4000-8000-000000000201&to=00000000-0000-4000-8000-000000000202';
-
-/** Google's polyline encoding, to build the stand-in Routes API answer. */
-function encode(points) {
-  let out = '';
-  let prev = [0, 0];
-  for (const p of points) {
-    const cur = [Math.round(p.latitude * 1e5), Math.round(p.longitude * 1e5)];
-    for (let i = 0; i < 2; i++) {
-      let v = cur[i] - prev[i];
-      v = v < 0 ? ~(v << 1) : v << 1;
-      while (v >= 0x20) {
-        out += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
-        v >>= 5;
-      }
-      out += String.fromCharCode(v + 63);
-    }
-    prev = cur;
-  }
-  return out;
-}
-
-// Records what the page draws instead of drawing it.
-const FAKE_MAPS = `(() => {
-  const state = (window.__fakeMaps = { polylines: [], markers: [], pans: 0, listeners: {} });
-  class LatLngBounds { extend() {} }
-  class Map {
-    constructor(el) { el.setAttribute('data-map-ready', '1'); }
-    fitBounds() {}
-    panTo() { state.pans++; }
-    addListener(name, fn) { state.listeners[name] = fn; }
-  }
-  class Polyline { constructor(o) { state.polylines.push(o.path); } }
-  class Marker {
-    constructor(o) { this.o = o; state.markers.push(this); }
-    setPosition(p) { this.o.position = p; }
-  }
-  window.google = { maps: { Map, Polyline, Marker, LatLngBounds, SymbolPath: { CIRCLE: 0 } } };
-  window[new URL(document.currentScript.src).searchParams.get('callback')]();
-})();`;
-
-async function fakeGoogle(context, counter) {
-  await context.route('https://maps.googleapis.com/maps/api/js**', (route) =>
-    route.fulfill({ contentType: 'text/javascript', body: FAKE_MAPS }),
-  );
-  // The web app's own /api/route function (it calls Google with the private key on Vercel).
-  await context.route('**/api/route?*', (route) => {
-    counter.routes++;
-    counter.query = new URL(route.request().url()).search;
-    route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({ encodedPolyline: encode([CIRCLE, MIDWAY, KASOA]), durationS: 1800, distanceM: 23000 }),
-    });
-  });
-}
 
 const dot = (page) =>
   page.evaluate(() => {

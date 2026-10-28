@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Loading, Notice, Screen } from '../components/ui';
 import { useI18n } from '../lib/i18n';
@@ -47,6 +47,13 @@ export default function LiveMapScreen() {
         geolocationEnabled={allowed}
         javaScriptEnabled
         domStorageEnabled
+        // WhatsApp, SMS and Google Maps links open in their own apps, not inside the map.
+        onShouldStartLoadWithRequest={(req) => {
+          if (req.url.startsWith(WEB_URL)) return true;
+          void Linking.openURL(req.url).catch(() => undefined);
+          return false;
+        }}
+        onOpenWindow={(e) => void Linking.openURL(e.nativeEvent.targetUrl).catch(() => undefined)}
       />
     </View>
   );

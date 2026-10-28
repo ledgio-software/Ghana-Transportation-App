@@ -3,7 +3,7 @@ import { EmergencyNumbers } from '../../components/EmergencyNumbers';
 import { Body, Button, Card, Screen, Title } from '../../components/ui';
 import { useI18n } from '../../lib/i18n';
 
-/** Safety tab (P1-SAFE): emergency numbers, report a driver, rate the driver. */
+/** Safety tab (P1-SAFE): emergency numbers, report a driver, share my trip, rate the driver. */
 export default function SafetyTab() {
   const { t } = useI18n();
   const router = useRouter();
@@ -15,6 +15,10 @@ export default function SafetyTab() {
         <Title>{t('driver.reportTitle')}</Title>
         <Body>{t('driver.reportWhy')}</Body>
         <Button label={t('driver.report')} onPress={() => router.push('/report-driver')} />
+      </Card>
+      <Card>
+        <Title>{t('share.button')}</Title>
+        <Body>{t('share.how')}</Body>
       </Card>
       <Card>
         <Title>{t('rate.title')}</Title>
