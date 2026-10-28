@@ -8,6 +8,7 @@ export * from './flags';
 export * from './csv';
 export * from './imports';
 export * from './legal';
+export * from './legal-text';
 export * from './maps';
 export * from './weather';
 export * from './safety';

@@ -335,13 +335,14 @@ Tests: *admin › reports: accept and reject*; database test "moderators cannot 
 ## P1-LEGAL Legal and privacy
 
 ### P1-LEGAL-01 Agree to terms before reporting · Must · Owner: compliance owner · **Built**
-- Before my first report, I see a plain summary and tap "I agree". News is a separate, optional choice.
+- Before my first report, I see a plain summary with links to the full Terms of Use and Privacy Policy, and tap "I agree". News is a separate, optional choice.
+- Anyone, signed in or not, can read the full Terms of Use (`/terms`) and Privacy Policy (`/privacy-policy`) from Settings, also offline. *privacy › the full terms and privacy policy open from Settings, signed out too*
 - Each answer is stored with the date, the document version and the app version.
 - When the terms change version, I am asked again.
 - The database refuses reports from anyone whose latest answer is not "yes".
 
-Tests: *privacy › first report asks for agreement, then works*; database tests "report accepted without consent" and "report accepted after consent withdrawn"; `packages/shared/test/legal.test.ts`.
-**Still to verify:** the lawyer-approved terms and privacy notice (English and Twi), linked through `EXPO_PUBLIC_LEGAL_URL`.
+Tests: *privacy › first report asks for agreement, then works*; database tests "report accepted without consent" and "report accepted after consent withdrawn"; `packages/shared/test/legal.test.ts`, `packages/shared/test/legal-text.test.ts`.
+**Still to verify:** a Ghanaian lawyer reviews the drafts (`docs/legal/`, written from `packages/shared/src/legal-text.ts`), the company details are filled in (`LEGAL_ENTITY`), the company registers with the Data Protection Commission, and the Twi translation. Then set `LEGAL_IS_DRAFT` to false and bump `LEGAL_VERSIONS`.
 
 ### P1-LEGAL-02 See and change consent · Must · Owner: compliance owner · **Done**
 - Settings → Privacy and your data shows when I agreed. I can turn news on and off. Each change is a new record, never an edit.

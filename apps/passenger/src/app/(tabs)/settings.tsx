@@ -38,6 +38,10 @@ export default function SettingsScreen() {
       ) : (
         <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
       )}
+
+      <Title>{t('legal.about')}</Title>
+      <Button label={t('legal.terms')} variant="secondary" onPress={() => router.push('/terms')} />
+      <Button label={t('legal.policy')} variant="secondary" onPress={() => router.push('/privacy-policy')} />
     </Screen>
   );
 }

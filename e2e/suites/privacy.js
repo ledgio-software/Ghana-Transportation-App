@@ -6,7 +6,7 @@ module.exports = {
   name: 'privacy',
   app: 'passenger',
   session: 'passenger',
-  async run({ page, base, step }) {
+  async run({ page, base, step, browser }) {
     page.on('dialog', (d) => d.accept());
 
     await step('first report asks for agreement, then works', async () => {
@@ -14,13 +14,28 @@ module.exports = {
       await page.getByRole('button', { name: 'Report what you paid' }).click();
       await page.getByRole('button', { name: 'Continue' }).click();
       await page.getByText('We keep your phone number to stop fake reports. We never sell your data.').waitFor();
+      await page.getByRole('link', { name: 'Terms of use' }).waitFor();
+      await page.getByRole('link', { name: 'Privacy policy' }).waitFor();
       await page.getByLabel('Send me news about new features (optional)').click();
       await page.getByRole('button', { name: 'I agree' }).click();
       await page.getByLabel('Amount you paid (GH¢)').fill('12');
       await page.getByRole('button', { name: 'Send report' }).click();
       await page.getByText('Thank you! Your report helps other travellers.').waitFor();
       const rows = sql(`select string_agg(consent_type||':'||granted||':'||document_version||':'||coalesce(app_version,'-'), ' ' order by consent_type) from consents where user_id = '${PASSENGER}'`);
-      if (rows !== 'marketing:true:1:0.1.0 privacy:true:2026-10-draft-1:0.1.0 terms:true:2026-10-draft-1:0.1.0') throw new Error(rows);
+      if (rows !== 'marketing:true:1:0.1.0 privacy:true:2026-10-draft-2:0.1.0 terms:true:2026-10-draft-2:0.1.0') throw new Error(rows);
+    });
+    await step('the full terms and privacy policy open from Settings, signed out too', async () => {
+      const anon = await (await browser.newContext({ viewport: { width: 360, height: 800 } })).newPage();
+      await anon.goto(`${base}/settings`);
+      await anon.getByRole('button', { name: 'Terms of use' }).click();
+      await anon.getByRole('heading', { name: 'Terms of Use', exact: true }).waitFor();
+      await anon.getByText('Draft: this text is waiting for legal review and may change.').waitFor();
+      await anon.getByText(/If anyone is in danger or hurt, call 112 straight away\./).waitFor();
+      await anon.goto(`${base}/privacy-policy`);
+      await anon.getByRole('heading', { name: 'Privacy Policy', exact: true }).waitFor();
+      await anon.getByRole('heading', { name: '8. Your rights' }).waitFor();
+      await anon.getByText(/Version 2026-10-draft-2/).waitFor();
+      await anon.context().close();
     });
     await step('turning marketing off adds a new record', async () => {
       await page.goto(`${base}/privacy`);
