@@ -15,7 +15,7 @@
       "package": "gh.com.ghanatransport.app",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#0B6E4F",
+        "backgroundColor": "#006B3F",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,7 +27,7 @@
       "favicon": "./assets/favicon.png",
       "name": "Ghana Transport",
       "shortName": "GH Transport",
-      "themeColor": "#0B6E4F",
+      "themeColor": "#006B3F",
       "backgroundColor": "#FFFFFF"
     },
     "plugins": [

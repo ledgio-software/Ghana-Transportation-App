@@ -82,7 +82,7 @@ function RateDriverForm() {
             key={n}
             accessibilityRole="radio"
             accessibilityLabel={t('rate.stars', { n: String(n) })}
-            accessibilityState={{ checked: rating === n }}
+            aria-checked={rating === n}
             onPress={() => rate(n)}
             hitSlop={6}
           >

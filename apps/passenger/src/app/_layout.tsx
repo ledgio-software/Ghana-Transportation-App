@@ -1,9 +1,9 @@
 import { isUpdateRequired } from '@gta/shared';
 import Constants from 'expo-constants';
-import { Link, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { type ReactNode, useEffect, useState } from 'react';
-import { AppState, Linking, Platform, Pressable, Text } from 'react-native';
+import { AppState, Linking, Platform } from 'react-native';
 import { Body, Button, Screen, Title } from '../components/ui';
 import { loadAppVersion } from '../lib/api';
 import { I18nProvider, useI18n } from '../lib/i18n';
@@ -72,28 +72,13 @@ function AppStack() {
           contentStyle: { backgroundColor: colors.background },
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{
-            title: t('app.name'),
-            headerRight: () => (
-              <Link href="/settings" asChild>
-                <Pressable accessibilityRole="button" hitSlop={12}>
-                  <Text style={{ color: colors.primaryText, fontSize: 16, fontWeight: '600', paddingHorizontal: 8 }}>
-                    {t('settings.title')}
-                  </Text>
-                </Pressable>
-              </Link>
-            ),
-          }}
-        />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: t('app.name') }} />
         <Stack.Screen name="results" options={{ title: t('search.button') }} />
         <Stack.Screen name="report" options={{ title: t('report.button') }} />
         <Stack.Screen name="sign-in" options={{ title: t('auth.title') }} />
         <Stack.Screen name="consent" options={{ title: t('legal.title') }} />
         <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
         <Stack.Screen name="alerts" options={{ title: t('alerts.title') }} />
-        <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
         <Stack.Screen name="emergency" options={{ title: t('sos.title') }} />
         <Stack.Screen name="report-driver" options={{ title: t('driver.reportTitle') }} />
         <Stack.Screen name="rate-driver" options={{ title: t('rate.title') }} />
