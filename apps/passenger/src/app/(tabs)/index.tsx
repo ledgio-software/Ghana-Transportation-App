@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { StationPicker } from '../../components/StationPicker';
-import { TripCard } from '../../components/TripCard';
+import { SavedTripCard } from '../../components/TripCard';
 import { Body, Button, Card, FlagStripe, Loading, Notice, Screen, Title } from '../../components/ui';
 import { useAlerts } from '../../lib/alerts';
 import { loadStations } from '../../lib/api';
@@ -109,10 +109,10 @@ export default function SearchScreen() {
         <>
           <Title>{t('saved.title')}</Title>
           {trips.map((trip) => (
-            <TripCard
+            <SavedTripCard
               key={`${trip.originId}:${trip.destinationId}`}
-              from={trip.originName}
-              to={trip.destinationName}
+              trip={trip}
+              stations={stations}
               onPress={() =>
                 router.push({
                   pathname: '/results',

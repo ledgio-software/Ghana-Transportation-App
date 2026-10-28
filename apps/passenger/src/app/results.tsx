@@ -11,7 +11,7 @@ import { loadStations, searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
 import { useConsents } from '../lib/consent';
-import { useSavedTrips } from '../lib/saved';
+import { type SavedTrip, useSavedTrips } from '../lib/saved';
 import { enqueue } from '../lib/outbox';
 import { useSession } from '../lib/session';
 import { colors, font, ghana, radius, space } from '../lib/theme';
@@ -97,7 +97,17 @@ export default function ResultsScreen() {
       {fares && fares.length > 0 && origin && destination && (
         <TripWeather origin={origin} destination={destination} durationMin={durationMin} />
       )}
-      {fares && fares.length > 0 && <SaveTrip from={from} to={to} routeIds={[...new Set(fares.map((f) => f.route_id))]} />}
+      {fares && fares.length > 0 && from && to && (
+        <SaveTrip
+          trip={{
+            originId: from,
+            destinationId: to,
+            originName: origin?.name ?? title?.split(' → ')[0] ?? '',
+            destinationName: destination?.name ?? title?.split(' → ')[1] ?? '',
+            routeIds: [...new Set(fares.map((f) => f.route_id))],
+          }}
+        />
+      )}
       {fares && origin && destination && <RouteMap origin={origin} destination={destination} />}
       {fares && fares.length > 0 && <TripSafety routeId={fares[0]!.route_id} label={title} />}
     </Screen>
@@ -166,25 +176,20 @@ function TripSafety({ routeId, label }: { routeId: string; label?: string }) {
   );
 }
 
-/** "Save this trip": saved trips appear on the home screen and get fare-change alerts. */
-function SaveTrip({ from, to, routeIds }: { from?: string; to?: string; routeIds: string[] }) {
+/** "Save this trip": saved trips appear on the home screen; signed in, they also get fare-change alerts. */
+function SaveTrip({ trip }: { trip: SavedTrip }) {
   const { t } = useI18n();
-  const router = useRouter();
   const { trips, save, remove, signedIn } = useSavedTrips();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const saved = trips.find((trip) => trip.originId === from && trip.destinationId === to);
+  const saved = trips.find((x) => x.originId === trip.originId && x.destinationId === trip.destinationId);
 
   async function toggle() {
-    if (!signedIn) {
-      router.push('/sign-in');
-      return;
-    }
     setBusy(true);
     setFailed(false);
     try {
-      if (saved) await remove(saved.routeIds);
-      else await save(routeIds);
+      if (saved) await remove(saved);
+      else await save(trip);
     } catch {
       setFailed(true);
     } finally {
@@ -194,8 +199,8 @@ function SaveTrip({ from, to, routeIds }: { from?: string; to?: string; routeIds
 
   return (
     <View style={styles.save}>
-      {saved && <Body muted>{t('saved.saved')}</Body>}
-      {!signedIn && <Body muted>{t('saved.signIn')}</Body>}
+      {saved && <Body muted>{signedIn ? t('saved.saved') : t('saved.local')}</Body>}
+      {!saved && !signedIn && <Body muted>{t('saved.signIn')}</Body>}
       {failed && <Notice tone="danger">{t('common.error')}</Notice>}
       <Button
         label={saved ? t('saved.remove') : t('saved.save')}

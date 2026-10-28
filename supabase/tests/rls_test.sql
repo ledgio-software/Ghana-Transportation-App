@@ -506,4 +506,57 @@ end $$;
 reset role;
 reset request.jwt.claims;
 
+-- Share my trip: anyone can start one; only the secret moves the dot or stops it; the family
+-- page sees the position only while the share is live; nobody reads the table directly.
+create temp table share_test (id uuid, secret text);
+grant all on share_test to anon;
+set role anon;
+insert into share_test select share_id, secret from public.start_trip_share(
+  '00000000-0000-4000-8000-000000000201', '00000000-0000-4000-8000-000000000204');
+do $$
+declare s record; r record;
+begin
+  select * into s from share_test;
+  select * into r from public.get_trip_share(s.id);
+  assert r.status = 'live' and r.latitude is null, 'live share, no position yet';
+  assert r.origin_name is not null and r.destination_name is not null, 'station names shown';
+  assert public.update_trip_share(s.id, s.secret, 5.56, -0.2) , 'phone moves the dot';
+  assert not public.update_trip_share(s.id, 'wrong', 5.6, -0.1), 'wrong secret ignored';
+  select * into r from public.get_trip_share(s.id);
+  assert r.latitude = 5.56 and r.longitude = -0.2 and r.located_at is not null, 'family sees the dot';
+  begin
+    perform public.update_trip_share(s.id, s.secret, 51.5, -0.1);
+    raise exception 'position outside Ghana accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.start_trip_share(gen_random_uuid(), '00000000-0000-4000-8000-000000000204');
+    raise exception 'unknown station accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform count(*) from public.trip_shares;
+    raise exception 'table readable directly';
+  exception when insufficient_privilege then null;
+  end;
+  assert not public.end_trip_share(s.id, 'wrong'), 'wrong secret cannot stop it';
+  assert public.end_trip_share(s.id, s.secret), 'phone stops sharing';
+  select * into r from public.get_trip_share(s.id);
+  assert r.status = 'ended' and r.latitude is null, 'ended share hides the position';
+  assert not public.update_trip_share(s.id, s.secret, 5.57, -0.2), 'no updates after stopping';
+  assert (select count(*) from public.get_trip_share(gen_random_uuid())) = 0, 'unknown link shows nothing';
+end $$;
+reset role;
+-- Expired shares hide the position, and are deleted a day later.
+update public.trip_shares set latitude = 5.5, longitude = -0.2, ended_at = null, expires_at = now() - interval '1 minute';
+do $$ begin
+  assert (select status from public.get_trip_share((select id from share_test))) = 'expired', 'expired';
+  assert (select latitude is null from public.get_trip_share((select id from share_test))), 'expired share hides the position';
+  assert (public.purge_expired_data() ->> 'trip_shares_deleted')::int = 0, 'kept for a day';
+end $$;
+update public.trip_shares set expires_at = now() - interval '25 hours';
+do $$ begin
+  assert (public.purge_expired_data() ->> 'trip_shares_deleted')::int = 1, 'deleted a day after expiry';
+end $$;
+
 \echo 'All database checks passed'
