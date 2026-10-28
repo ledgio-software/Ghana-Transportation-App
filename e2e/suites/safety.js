@@ -9,13 +9,23 @@ module.exports = {
   app: 'passenger',
   session: 'passenger',
   setup: `insert into consents (user_id, consent_type, document_version, granted) values
-    ('${PASSENGER}', 'terms', '2026-10-draft-2', true), ('${PASSENGER}', 'privacy', '2026-10-draft-2', true);
+    ('${PASSENGER}', 'terms', '2026-10-draft-3', true), ('${PASSENGER}', 'privacy', '2026-10-draft-3', true);
   insert into emergency_contacts (name, phone, kind, sort_order) values ('MTTD Accra (test)', '0302000000', 'road_safety', 60);`,
   async run({ page, base, step, browser }) {
-    await step('emergency numbers: one tap to call, from the home screen, signed out', async () => {
-      const anon = await (await browser.newContext({ viewport: { width: 360, height: 800 } })).newPage();
+    await step('one tap on the home screen dials 112; every number is one tap away, signed out', async () => {
+      const ctx = await browser.newContext({ viewport: { width: 360, height: 800 } });
+      const anon = await ctx.newPage();
+      // The website opens the phone's dialer by going to tel:112; record that instead of following it.
+      const cdp = await ctx.newCDPSession(anon);
+      const dialled = [];
+      await cdp.send('Page.enable');
+      cdp.on('Page.frameRequestedNavigation', (e) => dialled.push(e.url));
       await anon.goto(`${base}/`);
-      await anon.getByRole('button', { name: 'Emergency: police, fire, ambulance' }).click();
+      await anon.getByRole('button', { name: 'Call 112: police, fire, ambulance' }).click();
+      for (let i = 0; i < 20 && !dialled.includes('tel:112'); i++) await anon.waitForTimeout(100);
+      if (!dialled.includes('tel:112')) throw new Error(`dialled: ${dialled.join(' ')}`);
+      await anon.goto(`${base}/`);
+      await anon.getByRole('link', { name: 'All emergency numbers' }).click();
       await anon.getByText('If anyone is in danger or hurt, call 112 now.').waitFor();
       await anon.getByRole('button', { name: 'Call All emergencies, 112' }).waitFor();
       await anon.getByRole('button', { name: 'Call Fire service, 192' }).waitFor();

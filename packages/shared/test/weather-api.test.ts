@@ -16,7 +16,7 @@ const step = (time: string, hours: 1 | 6, symbol: string, mm: number, prob?: num
 describe('/api/weather', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it('keeps the next 36 hours, hourly first, then 6-hourly without overlaps', () => {
+  it('keeps the next 4 days, hourly first, then 6-hourly without overlaps', () => {
     const periods = toPeriods(
       {
         properties: {
@@ -26,7 +26,8 @@ describe('/api/weather', () => {
             step('2026-10-27T10:00:00Z', 1, 'heavyrain', 9),
             step('2026-10-28T12:00:00Z', 6, 'partlycloudy_day', 0),
             step('2026-10-28T15:00:00Z', 6, 'cloudy', 0), // inside the previous 6-hour period
-            step('2026-10-29T12:00:00Z', 6, 'cloudy', 0), // beyond 36 hours
+            step('2026-10-29T12:00:00Z', 6, 'cloudy', 0),
+            step('2026-10-31T12:00:00Z', 6, 'rain', 3), // beyond 4 days
           ],
         },
       },
@@ -36,6 +37,7 @@ describe('/api/weather', () => {
       { time: '2026-10-27T09:00:00Z', hours: 1, symbol: 'rain', precipMm: 1.5, precipProbability: 70, tempC: 27.4 },
       { time: '2026-10-27T10:00:00Z', hours: 1, symbol: 'heavyrain', precipMm: 9, precipProbability: null, tempC: 27.4 },
       { time: '2026-10-28T12:00:00Z', hours: 6, symbol: 'partlycloudy_day', precipMm: 0, precipProbability: null, tempC: 27.4 },
+      { time: '2026-10-29T12:00:00Z', hours: 6, symbol: 'cloudy', precipMm: 0, precipProbability: null, tempC: 27.4 },
     ]);
   });
 

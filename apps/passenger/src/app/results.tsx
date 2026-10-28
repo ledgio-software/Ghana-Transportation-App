@@ -11,6 +11,7 @@ import { loadStations, searchFares } from '../lib/api';
 import { useFlag } from '../lib/flags';
 import { formatDate, useI18n } from '../lib/i18n';
 import { useConsents } from '../lib/consent';
+import { recordTrip } from '../lib/history';
 import { type SavedTrip, useSavedTrips } from '../lib/saved';
 import { enqueue } from '../lib/outbox';
 import { useSession } from '../lib/session';
@@ -48,6 +49,12 @@ export default function ResultsScreen() {
   }, []);
   const origin = useMemo(() => stations?.find((s) => s.id === from), [stations, from]);
   const destination = useMemo(() => stations?.find((s) => s.id === to), [stations, to]);
+  // Every trip looked up goes into the history on the phone (My trips → Recent trips).
+  useEffect(() => {
+    if (origin && destination) {
+      recordTrip({ originId: origin.id, destinationId: destination.id, originName: origin.name, destinationName: destination.name });
+    }
+  }, [origin, destination]);
   // The option shown in full below the cards; the first (cheapest listed) until one is tapped.
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = fares?.find((f) => f.fare_id === selectedId) ?? fares?.[0] ?? null;

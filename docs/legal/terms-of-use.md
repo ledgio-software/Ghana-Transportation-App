@@ -1,12 +1,12 @@
 # Terms of Use
 
-Version 2026-10-draft-2 · Last updated 29 October 2026
+Version 2026-10-draft-3 · Last updated 28 October 2026
 
-> **Draft for legal review.** Not yet approved by a lawyer. Text in [brackets] is still to be filled in.
+> **Draft for legal review.** Not yet approved by a lawyer.
 
 ## 1. About these terms
 
-These terms are an agreement between you and [Company name], [Registered address], Accra, Ghana ("we", "us"), for the Ghana Transport app, website and iPhone home-screen app ("the app"). By using the app you accept these terms. Before you send reports, the app asks you to agree to them and to our Privacy Policy.
+These terms are an agreement between you and Alpha Group of Developers Software Solutions, GW-1127-8862 (GhanaPost GPS), Accra, Ghana ("we", "us"), for the Ghana Transport app, website and iPhone home-screen app ("the app"). By using the app you accept these terms. Before you send reports, the app asks you to agree to them and to our Privacy Policy.
 
 ## 2. What the app does
 
@@ -75,7 +75,7 @@ When you send a link by WhatsApp, SMS or another app, that app's own terms apply
 
 ## 10. Our app and content
 
-The app, its design and our fare collection belong to [Company name]. You may use them for your own travel. You may not copy, sell or republish them without our permission.
+The app, its design and our fare collection belong to Alpha Group of Developers Software Solutions. You may use them for your own travel. You may not copy, sell or republish them without our permission.
 
 ## 11. Changes and availability
 
@@ -95,8 +95,8 @@ You can stop using the app and delete your account at any time. We may suspend o
 
 ## 14. Law and disputes
 
-These terms are governed by the laws of the Republic of Ghana. If you have a problem, please contact us first at [privacy@your-domain.com] and we will try to resolve it. If we cannot, the courts of Ghana will decide.
+These terms are governed by the laws of the Republic of Ghana. If you have a problem, please contact us first at developershu26@gmail.com and we will try to resolve it. If we cannot, the courts of Ghana will decide.
 
 ## 15. Contact us
 
-[Company name], [Registered address], Accra, Ghana. Email: [privacy@your-domain.com].
+Alpha Group of Developers Software Solutions, GW-1127-8862 (GhanaPost GPS), Accra, Ghana. Email: developershu26@gmail.com.

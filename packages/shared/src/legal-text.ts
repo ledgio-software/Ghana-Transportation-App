@@ -10,19 +10,20 @@ import { LEGAL_VERSIONS } from './legal';
 
 /** The company details the documents name. Fill in once known; brackets mark what is missing. */
 export const LEGAL_ENTITY = {
-  name: '[Company name]',
-  address: '[Registered address], Accra, Ghana',
-  email: '[privacy@your-domain.com]',
-  dpcRegistration: '[DPC registration number]',
-  /** Supabase → Project settings → General shows it. */
-  dataRegion: '[database region, for example Europe (Frankfurt)]',
+  name: 'Alpha Group of Developers Software Solutions',
+  address: 'GW-1127-8862 (GhanaPost GPS), Accra, Ghana',
+  email: 'developershu26@gmail.com',
+  /** Empty until the Data Protection Commission gives one; the policy then says registration is in progress. */
+  dpcRegistration: '',
+  /** Supabase → Project settings → General shows it (eu-west-2). */
+  dataRegion: 'Europe (London, United Kingdom)',
   website: 'https://ghana-transportation-app-passenger.vercel.app',
 } as const;
 
 export type LegalEntity = { [K in keyof typeof LEGAL_ENTITY]: string };
 
 /** Date of the current text, shown as "Last updated". */
-export const LEGAL_UPDATED = '29 October 2026';
+export const LEGAL_UPDATED = '28 October 2026';
 
 /** True until the lawyer approves the text; the app then stops showing the draft notice. */
 export const LEGAL_IS_DRAFT = true;
@@ -51,7 +52,11 @@ export function privacyPolicy(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
       {
         heading: '1. Who we are',
         blocks: [
-          `Ghana Transport ("the app") is run by ${e.name}, ${e.address} ("we", "us"). We are the data controller for the personal data described here, and we are registered with the Data Protection Commission of Ghana (registration number ${e.dpcRegistration}).`,
+          `Ghana Transport ("the app") is run by ${e.name}, ${e.address} ("we", "us"). We are the data controller for the personal data described here. ${
+            e.dpcRegistration
+              ? `We are registered with the Data Protection Commission of Ghana (registration number ${e.dpcRegistration}).`
+              : 'Our registration with the Data Protection Commission of Ghana is in progress.'
+          }`,
           `This policy explains what personal data we collect, why, who sees it, how long we keep it and your rights under the Data Protection Act, 2012 (Act 843). It covers the Android app, the website and iPhone home-screen app at ${e.website}, and the "follow a trip" page that family open from a shared link.`,
           `Questions or requests: ${e.email}.`,
         ],
@@ -80,7 +85,7 @@ export function privacyPolicy(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
             'Technical data: your IP address, browser or phone type and app version, kept in our hosting providers\' logs for security and to fix faults.',
           ],
           'We do not collect your contacts, ID numbers or payment details. We do not use advertising or tracking tools, and we never sell your data.',
-          'Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips and reports waiting to be sent. Deleting the app (or clearing the website\'s data in your browser) removes it.',
+          'Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips, your recent trips (until you clear them in My trips) and reports waiting to be sent. Deleting the app (or clearing the website\'s data in your browser) removes it.',
         ],
       },
       {
@@ -102,7 +107,7 @@ export function privacyPolicy(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
             'Our staff: trained staff review reports, driver reports and photos. They sign in with two-step verification, and changes they make are logged.',
             'Authorities and operators: when a driver report needs action, our staff may pass it to the Police Motor Traffic and Transport Directorate (MTTD), the National Road Safety Authority (NRSA) or the transport operator or union. We share what happened, the plate, the route, the time, your note and the photos, but not your name or phone number, unless you agree or the law requires it.',
             'People you share a trip with: anyone who has your link sees your trip and latest position until sharing ends.',
-            'Service providers who process data for us under contract: Supabase (database, sign-in and photo storage), Vercel (website and web services), our SMS provider (sends sign-in codes), Google Maps Platform (maps and road routes) and MET Norway (weather forecasts). When you open a map, your phone connects to Google, which receives your IP address; Google\'s privacy policy (https://policies.google.com/privacy) applies to that. Weather and road routes are fetched by our servers with the stations\' positions only, not your identity; for Traffic home, our servers send Google your rounded position and home, without your identity.',
+            'Service providers who process data for us under contract: Supabase (database, sign-in and photo storage), Vercel (website and web services), our SMS provider (sends sign-in codes; during testing this is SMSGate, which sends them from a phone we control through its cloud service), Google Maps Platform (maps and road routes) and MET Norway (weather forecasts). When you open a map, your phone connects to Google, which receives your IP address; Google\'s privacy policy (https://policies.google.com/privacy) applies to that. Weather and road routes are fetched by our servers with the stations\' positions only, not your identity; for Traffic home, our servers send Google your rounded position and home, without your identity.',
             'When the law requires: we share data if Ghanaian law, a court order or a lawful request from the authorities requires it.',
           ],
         ],
@@ -304,7 +309,7 @@ export function termsOfUse(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
 /** The document as Markdown, for docs/legal and for the lawyer. */
 export function legalMarkdown(doc: LegalDocument, draft: boolean = LEGAL_IS_DRAFT): string {
   const out = [`# ${doc.title}`, '', `Version ${doc.version} · Last updated ${doc.updated}`, ''];
-  if (draft) out.push('> **Draft for legal review.** Not yet approved by a lawyer. Text in [brackets] is still to be filled in.', '');
+  if (draft) out.push('> **Draft for legal review.** Not yet approved by a lawyer.', '');
   for (const section of doc.sections) {
     out.push(`## ${section.heading}`, '');
     for (const block of section.blocks) {

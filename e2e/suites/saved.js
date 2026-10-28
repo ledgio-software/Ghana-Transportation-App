@@ -74,6 +74,21 @@ module.exports = {
       await page.getByRole('button', { name: 'Save this trip' }).waitFor();
       if (sql(`select count(*) from saved_routes where user_id = '${PASSENGER}'`) !== '0') throw new Error('not removed');
     });
+    await step('every trip looked up is kept in Recent trips, newest first, until cleared', async () => {
+      await openResults(page, base, 'Kasoa');
+      await openResults(page, base, 'Fadama');
+      await page.goto(`${base}/trips`);
+      await page.getByRole('heading', { name: 'Recent trips' }).waitFor();
+      const cards = page.getByRole('button', { name: /Kwame Nkrumah Circle → (Fadama|Kasoa)/ });
+      await cards.first().waitFor();
+      const names = await cards.allTextContents();
+      if (!/Fadama/.test(names[0] ?? '') || !names.some((n) => /Kasoa/.test(n))) throw new Error(names.join(' | '));
+      page.once('dialog', (d) => d.accept());
+      await page.getByRole('button', { name: 'Clear history' }).click();
+      await page.getByText('Trips you look up appear here.').waitFor();
+      await page.reload();
+      await page.getByText('Trips you look up appear here.').waitFor();
+    });
     await step('same start and destination is refused (P1-FARE-01)', async () => {
       await page.goto(`${base}/`);
       await page.getByRole('button', { name: /^From/ }).click();

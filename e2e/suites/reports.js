@@ -6,7 +6,7 @@ module.exports = {
   app: 'passenger',
   session: 'passenger',
   setup: `insert into consents (user_id, consent_type, document_version, granted) values
-    ('${PASSENGER}', 'terms', '2026-10-draft-2', true), ('${PASSENGER}', 'privacy', '2026-10-draft-2', true);`,
+    ('${PASSENGER}', 'terms', '2026-10-draft-3', true), ('${PASSENGER}', 'privacy', '2026-10-draft-3', true);`,
   async run({ page, base, step, browser }) {
     await step('report what you paid (online)', async () => {
       await openResults(page, base, 'Kasoa');

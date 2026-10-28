@@ -1,17 +1,20 @@
 import type { StationRow } from '@gta/shared';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { SavedTripCard } from '../../components/TripCard';
+import { SavedTripCard, TripCard } from '../../components/TripCard';
 import { Body, Button, Card, Notice, Screen, Title } from '../../components/ui';
 import { useAlerts } from '../../lib/alerts';
 import { loadStations } from '../../lib/api';
-import { useI18n } from '../../lib/i18n';
+import { confirmAsync } from '../../lib/confirm';
+import { useHistory } from '../../lib/history';
+import { formatDate, formatTime, useI18n } from '../../lib/i18n';
 import { useOutboxCount } from '../../lib/outbox';
 import { useSavedTrips } from '../../lib/saved';
 
-/** My trips tab: saved trips, fare-change alerts and reports waiting to send (P1-NOTIF, P1-OFF). */
+/** My trips tab: saved trips, fare-change alerts, reports waiting to send and recent trips (P1-NOTIF, P1-OFF). */
 export default function TripsTab() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const history = useHistory();
   const router = useRouter();
   const { trips, signedIn } = useSavedTrips();
   const { unread } = useAlerts();
@@ -54,6 +57,33 @@ export default function TripsTab() {
           }
         />
       ))}
+
+      <Title>{t('history.title')}</Title>
+      {history.trips.length === 0 && <Body muted>{t('history.none')}</Body>}
+      {history.trips.slice(0, 10).map((trip) => (
+        <TripCard
+          key={`h:${trip.originId}:${trip.destinationId}`}
+          from={trip.originName}
+          to={trip.destinationName}
+          detail={`${formatDate(trip.at, lang)}, ${formatTime(new Date(trip.at), lang)}`}
+          onPress={() =>
+            router.push({
+              pathname: '/results',
+              params: { from: trip.originId, to: trip.destinationId, title: `${trip.originName} → ${trip.destinationName}` },
+            })
+          }
+        />
+      ))}
+      {history.trips.length > 0 && (
+        <Button
+          label={t('history.clear')}
+          variant="secondary"
+          onPress={async () => {
+            if (await confirmAsync(t('history.clearConfirm'), t('history.clear'), t('common.cancel'))) history.clear();
+          }}
+        />
+      )}
+      <Body muted>{t('history.private')}</Body>
     </Screen>
   );
 }

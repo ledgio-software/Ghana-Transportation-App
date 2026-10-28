@@ -2,7 +2,7 @@ import type { StationRow } from '@gta/shared';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { StationPicker } from '../../components/StationPicker';
 import { SavedTripCard } from '../../components/TripCard';
 import { Body, Button, Card, FlagStripe, Loading, Notice, Screen, Title } from '../../components/ui';
@@ -53,9 +53,13 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      <Pressable accessibilityRole="button" style={styles.sos} onPress={() => router.push('/emergency')}>
+      {/* One tap opens the phone's dialer on 112 (phones never let an app place an emergency call by itself). */}
+      <Pressable accessibilityRole="button" style={styles.sos} onPress={() => Linking.openURL('tel:112')}>
         <Ionicons name="call" size={20} color={colors.primaryText} />
         <Text style={styles.sosText}>{t('sos.button')}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="link" style={styles.sosMore} onPress={() => router.push('/emergency')}>
+        <Text style={styles.sosMoreText}>{t('sos.more')}</Text>
       </Pressable>
 
       {waiting > 0 && <Notice>{t('report.pending', { count: waiting })}</Notice>}
@@ -151,6 +155,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger,
   },
   sosText: { fontSize: font.body, fontWeight: '700', color: colors.primaryText },
+  sosMore: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: -space.sm },
+  sosMoreText: { fontSize: font.small, fontWeight: '600', color: colors.danger, textDecorationLine: 'underline' },
   pickers: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   pickerColumn: { flex: 1, gap: space.sm },
   swap: {
