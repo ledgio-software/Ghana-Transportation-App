@@ -559,4 +559,97 @@ do $$ begin
   assert (public.purge_expired_data() ->> 'trip_shares_deleted')::int = 1, 'deleted a day after expiry';
 end $$;
 
+-- Partner fare API (GPRTU): only admins make keys; a key changes fares with history and keeps the
+-- departure mode; bad keys, unknown stations and bad prices are refused; revoked keys stop working.
+insert into auth.users (id, email) values ('00000000-0000-4000-8000-00000000a005', 'admin@example.com');
+insert into public.user_roles (user_id, role) values ('00000000-0000-4000-8000-00000000a005', 'admin');
+create temp table partner_test (key text);
+grant all on partner_test to authenticated, anon;
+set role authenticated;
+set request.jwt.claims = '{"aal": "aal2"}';
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a003';
+do $$ begin
+  begin
+    perform public.create_partner('Not allowed', null);
+    raise exception 'data editor made a partner key';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a005';
+insert into partner_test select public.create_partner('GPRTU Accra', '00000000-0000-4000-8000-000000000103');
+do $$ begin
+  assert (select key from partner_test) like 'gtp\_%', 'key handed out once';
+  assert (select key_hint from public.partners) = right((select key from partner_test), 4), 'admin sees the hint';
+  begin
+    perform key_hash from public.partners;
+    raise exception 'key hash readable';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+reset request.jwt.claims;
+reset request.jwt.claim.sub;
+
+set role anon;
+do $$
+declare
+  k text := (select key from partner_test);
+  res jsonb;
+begin
+  res := public.partner_update_fares(k, '[
+    {"origin": "kwame-nkrumah-circle", "destination": "fadama", "vehicle_type": "trotro", "amount_ghs": 6.75},
+    {"origin": "nowhere", "destination": "fadama", "amount_ghs": 5},
+    {"origin": "kwame-nkrumah-circle", "destination": "fadama", "vehicle_type": "trotro", "amount_ghs": 0}
+  ]');
+  assert res ->> 'partner' = 'GPRTU Accra', res::text;
+  assert res -> 'results' -> 0 ->> 'status' = 'changed', res::text;
+  assert res -> 'results' -> 1 ->> 'message' = 'unknown station code: nowhere', res::text;
+  assert res -> 'results' -> 2 ->> 'status' = 'error', res::text;
+  assert (select amount_pesewas || ',' || is_official || ',' || departure_mode from public.fares
+          where route_id = '00000000-0000-4000-8000-000000000302' and effective_to is null) = '675,true,fill_and_go',
+    'fare changed, official, departure mode kept';
+  assert (select count(*) from public.fares where route_id = '00000000-0000-4000-8000-000000000302') >= 2, 'history kept';
+  res := public.partner_update_fares(k, '[{"origin": "kwame-nkrumah-circle", "destination": "fadama", "vehicle_type": "trotro", "amount_ghs": 6.75}]');
+  assert res -> 'results' -> 0 ->> 'status' = 'confirmed', 'same price confirms';
+  begin
+    perform public.partner_update_fares('gtp_wrong', '[{"origin": "kasoa", "destination": "fadama", "amount_ghs": 1}]');
+    raise exception 'wrong key accepted';
+  exception when invalid_authorization_specification then null;
+  end;
+  begin
+    perform public.partner_update_fares(k, '[]');
+    raise exception 'empty list accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform count(*) from public.partner_fare_updates;
+    raise exception 'update log readable by the public';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+do $$ begin
+  assert (select count(*) from public.partner_fare_updates) = 2, 'each call logged';
+  assert (select last_used_at is not null from public.partners), 'last use recorded';
+end $$;
+set role authenticated;
+set request.jwt.claims = '{"aal": "aal2"}';
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000a005';
+do $$ begin
+  assert (select count(*) from public.partner_fare_updates) = 2, 'admin sees the log';
+  perform public.revoke_partner((select id from public.partners));
+end $$;
+reset role;
+reset request.jwt.claims;
+reset request.jwt.claim.sub;
+set role anon;
+do $$ begin
+  begin
+    perform public.partner_update_fares((select key from partner_test), '[{"origin": "kasoa", "destination": "fadama", "amount_ghs": 1}]');
+    raise exception 'revoked key still works';
+  exception when invalid_authorization_specification then null;
+  end;
+end $$;
+reset role;
+
 \echo 'All database checks passed'

@@ -65,3 +65,5 @@ img.thumb { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; 
   .signin { grid-template-columns: 1fr; }
   .signin-brand-body { padding: 24px; }
 }
+.notice { border: 2px solid #fcd116; background: #fffbe6; border-radius: 8px; padding: 12px 16px; margin: 12px 0; max-width: 760px; }
+.notice code { word-break: break-all; font-size: 15px; }

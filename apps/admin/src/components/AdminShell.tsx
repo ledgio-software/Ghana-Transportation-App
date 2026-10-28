@@ -14,6 +14,7 @@ const NAV = [
   { href: '/reports', label: 'Reports' },
   { href: '/safety', label: 'Safety' },
   { href: '/import', label: 'Import' },
+  { href: '/partners', label: 'Partners' },
 ];
 
 /** Page frame for signed-in staff. Sends anyone without a two-factor session back to sign-in. */

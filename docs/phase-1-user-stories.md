@@ -20,15 +20,15 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-FARE Fare directory | 4 | 2 | 0 | 2 | Device lab for speed and data targets |
 | P1-ALERT Fair price check | 2 | 1 | 1 | 0 | Device test on a 2 GB phone |
 | P1-REPORT Crowd reports | 5 | 4 | 0 | 1 | — |
-| P1-TRIP Route and ETA | 5 | 0 | 4 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
-| P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
+| P1-TRIP Route and ETA | 6 | 0 | 5 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
+| P1-WX Weather | 3 | 0 | 3 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
 | P1-SAFE Safety | 5 | 2 | 3 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check; share-my-trip check on a real phone |
 | P1-OFF Offline | 3 | 1 | 2 | 0 | Hazard radar (offline alerts); iPhone home-screen check |
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
-| P1-ADMIN Admin dashboard | 8 | 6 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
+| P1-ADMIN Admin dashboard | 9 | 6 | 2 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **50** | **23** | **17** | **10** | |
+| **Total** | **53** | **23** | **20** | **10** | |
 
 ---
 
@@ -182,6 +182,10 @@ As a commuter, I want to see where I am and how long it will take to get home in
 
 Notes: drive times come from the Routes API with live traffic (`TRAFFIC_AWARE`, the "Pro" tier) through `/api/traffic`. Positions are rounded to about 100 m and answers shared for 5 minutes (`packages/shared/test/traffic-api.test.ts`). Car times: a trotro that stops often takes longer. Still to verify: on the hosted app with the real key, and the monthly Routes cost (ADR 0009).
 
+### P1-TRIP-06 Recent trips · Should · Owner: product lead · **Built**
+- Every trip I look up is kept on my phone under My trips → Recent trips, newest first (up to 20), and opens the fares again in one tap. Nothing is sent to the company.
+- "Clear history" removes them all after I confirm. *saved › every trip looked up is kept in Recent trips…*
+
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.
 - Common routes are cached to control Google Maps cost.
@@ -199,6 +203,9 @@ Notes: Google Maps starts from the phone's location. Directions go to the statio
 - Without a forecast, the fares still show. *weather › no forecast*
 
 Notes: forecasts come from MET Norway (free, no account) through the web app's `/api/weather` function, cached for 30 minutes per place (ADR 0013; `packages/shared/test/weather-api.test.ts`). "Along the route" is the halfway point on trips over 50 km. Arrival uses the route's typical duration until P1-TRIP-02 gives live travel times. Still to verify: the live forecast on the hosted app.
+
+### P1-WX-03 Forecast at the destination · Should · Owner: tech lead · **Built**
+- Besides the weather now and on arrival, I see the forecast at my destination every 3 hours from now, and for the next days (coolest and warmest, the worst weather of the day). *weather › the forecast at the destination…*; `packages/shared/test/weather.test.ts`
 
 ### P1-WX-02 Storm warning · Should · Owner: tech lead · **Built**
 - When heavy rain, flooding or harmattan dust is forecast on my route, I see a warning before I leave. *weather › heavy rain at a flood-prone start: flood warning and umbrella*
@@ -224,7 +231,7 @@ Notes: the database side exists (`hazard_reports`, moderation, `live_hazard_repo
 ## P1-SAFE Safety (requested by management, October 2026)
 
 ### P1-SAFE-01 Emergency numbers · Must · Owner: product lead · **Built**
-- From the home screen, in one tap, I see the police, fire and ambulance numbers and can call one with another tap. Works signed out. *safety › emergency numbers: one tap to call*
+- From the home screen, one tap on "Call 112" opens the phone's dialer on 112 (phones never let an app place an emergency call by itself; the person presses call). "All emergency numbers" lists police, fire and ambulance, one tap each. Works signed out. *safety › one tap on the home screen dials 112…*
 - The numbers show with no signal (saved on the phone; a built-in list before the first load). *safety › emergency numbers still show with no signal*; `packages/shared/test/safety.test.ts`
 - Staff can add, edit and hide numbers (for example MTTD, NRSA and bus company lines). *safety-admin › emergency numbers*; `supabase/tests/rls_test.sql`
 
@@ -336,6 +343,13 @@ Tests: *admin › reports: accept and reject*; database test "moderators cannot 
 
 ### P1-ADMIN-08 Overcharging hotspots · Should · Owner: operations lead · **Done**
 - Staff see the routes where passengers reported overcharging or short drops in the last 30 days, most reports first, with the average extra asked. Rejected reports are left out. *hotspots › hotspots list routes by overcharge reports in the last 30 days*
+
+### P1-ADMIN-09 Fare API for GPRTU and operators · Must · Owner: data lead · **Built**
+- An admin makes a key for a union or operator (shown once) and can stop it. *partners › an admin makes a key…*; *partners › a stopped key is refused*
+- With the key, the partner's system sends fare changes; each one is created, changed (history and alerts), confirmed, skipped or refused with a reason, at once. *partners › GPRTU sends a fare change…*; database tests "Partner fare API"
+- Staff see each update and its problems on the Partners page. *partners › the Partners page shows the update…*
+
+Notes: `docs/partner-fare-api.md` is the guide to send GPRTU; ADR 0016. Still to verify: GPRTU agrees to send changes this way, and a first real update on the hosted app.
 
 ### P1-ADMIN-07 Hazard zone editor · Must · Owner: data lead · **Not started**
 - Staff draw or enter hotspots and diversions, set the alert radius and attach the audio clip.

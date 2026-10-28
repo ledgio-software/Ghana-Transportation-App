@@ -19,3 +19,4 @@ One record per decision required by Phase 0 doc 7.4. Status: Accepted, Proposed 
 | 0013 | [Weather provider](0013-weather.md) | Accepted |
 | 0014 | [Photos on driver reports](0014-report-photos.md) | Accepted |
 | 0015 | [Share my trip](0015-share-my-trip.md) | Accepted |
+| 0016 | [Fare API for unions and operators](0016-partner-fare-api.md) | Accepted |
