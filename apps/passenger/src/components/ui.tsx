@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors, font, ghana, radius, space } from '../lib/theme';
 
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, transparent }: { children: ReactNode; transparent?: boolean }) {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView style={[styles.screen, transparent && styles.transparent]} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       {children}
     </ScrollView>
   );
@@ -77,6 +77,7 @@ export function Loading({ label }: { label: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
+  transparent: { backgroundColor: 'transparent' },
   content: { padding: space.md, gap: space.md, maxWidth: 640, width: '100%', alignSelf: 'center' },
   title: { fontSize: font.title, fontWeight: '700', color: colors.text },
   body: { fontSize: font.body, color: colors.text, lineHeight: 24 },
@@ -140,5 +141,70 @@ const cardStyles = StyleSheet.create({
     elevation: 2,
   },
   accent: { borderTopWidth: 4, borderTopColor: ghana.gold },
+});
+
+/**
+ * The flag as a round, glossy badge: our own drawing of the flag (the flag itself is free to use),
+ * so no third-party artwork. Used as the logo on the sign-in page.
+ */
+export function FlagBadge({ size = 96 }: { size?: number }) {
+  return (
+    <View
+      style={[badge.round, { width: size, height: size, borderRadius: size / 2 }]}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View style={[badge.band, { backgroundColor: ghana.red }]} />
+      <View style={[badge.band, { backgroundColor: ghana.gold }]} />
+      <View style={[badge.band, { backgroundColor: ghana.green }]} />
+      <View style={badge.center}>
+        <Text style={[badge.star, { fontSize: size * 0.42, lineHeight: size * 0.5 }]}>★</Text>
+      </View>
+      {/* Shine across the top half, like a glass button. */}
+      <View style={[badge.shine, { width: size * 0.8, height: size * 0.42, borderRadius: size * 0.4, left: size * 0.1, top: size * 0.04 }]} />
+    </View>
+  );
+}
+
+/** Soft, slanted flag bands behind a page (decoration only). */
+export function FlagBackdrop() {
+  return (
+    <View style={backdrop.fill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={backdrop.bands}>
+        <View style={[backdrop.band, { backgroundColor: ghana.red }]} />
+        <View style={[backdrop.band, { backgroundColor: ghana.gold }]} />
+        <View style={[backdrop.band, { backgroundColor: ghana.green }]} />
+      </View>
+    </View>
+  );
+}
+
+const badge = StyleSheet.create({
+  round: {
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  band: { flex: 1 },
+  center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
+  star: { color: ghana.black, textAlign: 'center' },
+  shine: { position: 'absolute', backgroundColor: 'rgba(255,255,255,0.28)' },
+});
+
+const backdrop = StyleSheet.create({
+  fill: { ...StyleSheet.absoluteFill, overflow: 'hidden', backgroundColor: colors.background },
+  bands: {
+    position: 'absolute',
+    top: -80,
+    left: '-30%',
+    width: '160%',
+    height: 420,
+    opacity: 0.14,
+    transform: [{ rotate: '-12deg' }],
+  },
+  band: { flex: 1 },
 });
 

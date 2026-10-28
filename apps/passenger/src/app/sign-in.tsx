@@ -3,11 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Body, Button, Card, FlagStripe, Notice, Screen } from '../components/ui';
+import { Body, Button, Card, FlagBackdrop, FlagBadge, Notice, Screen } from '../components/ui';
 import { checkAgreed } from '../lib/consent';
 import { useI18n } from '../lib/i18n';
 import { supabase } from '../lib/supabase';
-import { colors, font, ghana, radius, space } from '../lib/theme';
+import { colors, font, radius, space } from '../lib/theme';
 
 /** Wait before another code can be sent (each SMS costs money and Supabase limits them anyway). */
 const RESEND_AFTER_S = 30;
@@ -68,108 +68,97 @@ export default function SignInScreen() {
   }
 
   return (
-    <Screen>
-      <Stack.Screen options={{ title: t('auth.title') }} />
-      <View style={styles.hero}>
-        <FlagStripe height={14} />
-        <View style={styles.heroBody}>
-          <View style={styles.logo}>
-            <Text style={styles.logoStar}>★</Text>
-          </View>
+    <View style={styles.page}>
+      <FlagBackdrop />
+      <Screen transparent>
+        <Stack.Screen options={{ title: t('auth.title') }} />
+        <View style={styles.hero}>
+          <FlagBadge size={104} />
           <Text style={styles.welcome} accessibilityRole="header">
             {t('auth.welcome')}
           </Text>
           <Text style={styles.heroText}>{t('auth.noPassword')}</Text>
         </View>
-      </View>
 
-      <Card accent>
-        <Text style={styles.step}>{t('auth.step', { n: phone ? '2' : '1' })}</Text>
-        {error && <Notice tone="danger">{error}</Notice>}
-        {!phone ? (
-          <>
-            <Text style={styles.label}>{t('auth.phone')}</Text>
-            <View style={styles.phoneRow}>
-              <View style={styles.prefix}>
-                <Text style={styles.prefixText}>🇬🇭 +233</Text>
+        <Card accent>
+          <Text style={styles.step}>{t('auth.step', { n: phone ? '2' : '1' })}</Text>
+          {error && <Notice tone="danger">{error}</Notice>}
+          {!phone ? (
+            <>
+              <Text style={styles.label}>{t('auth.phone')}</Text>
+              <View style={styles.phoneRow}>
+                <View style={styles.prefix}>
+                  <Text style={styles.prefixText}>🇬🇭 +233</Text>
+                </View>
+                <TextInput
+                  value={phoneInput}
+                  onChangeText={setPhoneInput}
+                  keyboardType="phone-pad"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="24 123 4567"
+                  style={[styles.input, styles.phoneInput]}
+                  accessibilityLabel={t('auth.phone')}
+                  onSubmitEditing={sendCode}
+                />
               </View>
+              <Button label={t('auth.sendCode')} onPress={sendCode} loading={busy} disabled={!phoneInput} />
+            </>
+          ) : (
+            <>
+              <Body>{t('auth.codeSent', { phone: maskPhone(phone) })}</Body>
+              <Text style={styles.label}>{t('auth.code')}</Text>
               <TextInput
-                value={phoneInput}
-                onChangeText={setPhoneInput}
-                keyboardType="phone-pad"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="24 123 4567"
-                style={[styles.input, styles.phoneInput]}
-                accessibilityLabel={t('auth.phone')}
-                onSubmitEditing={sendCode}
+                value={code}
+                onChangeText={(v) => setCode(v.replace(/\D/g, ''))}
+                keyboardType="number-pad"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                textContentType="oneTimeCode"
+                maxLength={6}
+                placeholder="••••••"
+                style={[styles.input, styles.code]}
+                accessibilityLabel={t('auth.code')}
+                onSubmitEditing={verify}
               />
-            </View>
-            <Button label={t('auth.sendCode')} onPress={sendCode} loading={busy} disabled={!phoneInput} />
-          </>
-        ) : (
-          <>
-            <Body>{t('auth.codeSent', { phone: maskPhone(phone) })}</Body>
-            <Text style={styles.label}>{t('auth.code')}</Text>
-            <TextInput
-              value={code}
-              onChangeText={(v) => setCode(v.replace(/\D/g, ''))}
-              keyboardType="number-pad"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              textContentType="oneTimeCode"
-              maxLength={6}
-              placeholder="••••••"
-              style={[styles.input, styles.code]}
-              accessibilityLabel={t('auth.code')}
-              onSubmitEditing={verify}
-            />
-            <Button label={t('auth.verify')} onPress={verify} loading={busy} disabled={code.trim().length !== 6} />
-            <View style={styles.links}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => {
-                  setPhone(null);
-                  setCode('');
-                  setError(null);
-                }}
-              >
-                <Text style={styles.link}>{t('auth.changeNumber')}</Text>
-              </Pressable>
-              {wait > 0 ? (
-                <Text style={styles.muted}>{t('auth.resendIn', { seconds: String(wait) })}</Text>
-              ) : (
-                <Pressable accessibilityRole="button" onPress={sendCode} disabled={busy}>
-                  <Text style={styles.link}>{t('auth.resend')}</Text>
+              <Button label={t('auth.verify')} onPress={verify} loading={busy} disabled={code.trim().length !== 6} />
+              <View style={styles.links}>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setPhone(null);
+                    setCode('');
+                    setError(null);
+                  }}
+                >
+                  <Text style={styles.link}>{t('auth.changeNumber')}</Text>
                 </Pressable>
-              )}
-            </View>
-          </>
-        )}
-      </Card>
+                {wait > 0 ? (
+                  <Text style={styles.muted}>{t('auth.resendIn', { seconds: String(wait) })}</Text>
+                ) : (
+                  <Pressable accessibilityRole="button" onPress={sendCode} disabled={busy}>
+                    <Text style={styles.link}>{t('auth.resend')}</Text>
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
+        </Card>
 
-      <View style={styles.why}>
-        <Ionicons name="lock-closed" size={18} color={colors.muted} />
-        <Body muted>{t('auth.why')}</Body>
-      </View>
-    </Screen>
+        <View style={styles.why}>
+          <Ionicons name="lock-closed" size={18} color={colors.muted} />
+          <Body muted>{t('auth.why')}</Body>
+        </View>
+      </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: ghana.black },
-  heroBody: { padding: space.lg, gap: space.sm, alignItems: 'center' },
-  logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: ghana.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoStar: { fontSize: 36, color: ghana.black, lineHeight: 40 },
-  welcome: { fontSize: font.title, fontWeight: '800', color: colors.primaryText, textAlign: 'center' },
-  heroText: { fontSize: font.body, color: colors.primaryText, textAlign: 'center' },
+  page: { flex: 1 },
+  hero: { alignItems: 'center', gap: space.sm, paddingTop: space.lg, paddingBottom: space.sm },
+  welcome: { fontSize: font.title, fontWeight: '800', color: colors.text, textAlign: 'center' },
+  heroText: { fontSize: font.body, color: colors.text, textAlign: 'center', maxWidth: 420 },
   step: { fontSize: font.small, fontWeight: '700', color: colors.primary, textTransform: 'uppercase' },
   label: { fontSize: font.small, color: colors.muted, fontWeight: '600' },
   phoneRow: { flexDirection: 'row', gap: space.sm },
