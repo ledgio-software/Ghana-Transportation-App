@@ -1,5 +1,5 @@
 // P1-TRIP-04: live map with the route line, a moving "you are here" dot and the time left.
-// Google Maps and the Routes API are replaced by stand-ins, so the tests never call Google.
+// Google Maps and the /api/route function are replaced by stand-ins, so the tests never call Google.
 
 const CIRCLE = { latitude: 5.5717, longitude: -0.2166 };
 const MIDWAY = { latitude: 5.553, longitude: -0.3168 };
@@ -49,14 +49,13 @@ async function fakeGoogle(context, counter) {
   await context.route('https://maps.googleapis.com/maps/api/js**', (route) =>
     route.fulfill({ contentType: 'text/javascript', body: FAKE_MAPS }),
   );
-  await context.route('https://routes.googleapis.com/**', (route) => {
+  // The web app's own /api/route function (it calls Google with the private key on Vercel).
+  await context.route('**/api/route?*', (route) => {
     counter.routes++;
-    counter.key = route.request().headers()['x-goog-api-key'];
+    counter.query = new URL(route.request().url()).search;
     route.fulfill({
       contentType: 'application/json',
-      body: JSON.stringify({
-        routes: [{ duration: '1800s', distanceMeters: 23000, polyline: { encodedPolyline: encode([CIRCLE, MIDWAY, KASOA]) } }],
-      }),
+      body: JSON.stringify({ encodedPolyline: encode([CIRCLE, MIDWAY, KASOA]), durationS: 1800, distanceM: 23000 }),
     });
   });
 }
@@ -82,7 +81,7 @@ module.exports = {
       await page.waitForURL(/\/live-map/);
       await page.getByText('To Kasoa').waitFor();
       await page.getByText('Allow location for this app to see where you are on the route.').waitFor();
-      if (counter.routes !== 1 || counter.key !== 'e2e-maps-key') throw new Error(JSON.stringify(counter));
+      if (counter.routes !== 1 || counter.query !== '?from=5.5717,-0.2166&to=5.5340,-0.4170') throw new Error(JSON.stringify(counter));
       const lines = await page.evaluate(() => window.__fakeMaps.polylines.length);
       if (lines !== 1) throw new Error(`route lines: ${lines}`);
     });

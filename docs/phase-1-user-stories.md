@@ -172,7 +172,7 @@ Notes: the map inside the app uses the free Google Maps Embed API and needs `EXP
 - I am told when I leave the route and when I arrive; without location permission I am told how to allow it. *live-map › leaving the road says so*, *live-map › arriving says so*, *live-map › start the live map…*
 - The route is kept on the phone for a week, so reopening it costs no data or Google calls. *live-map › the route is kept on the phone*; `packages/shared/test/route-progress.test.ts`
 
-Notes: requested by management ("like Bolt"). Uses the Maps JavaScript API and the Routes API (without live traffic, the cheaper tier) with the same website-restricted key; both have a free monthly allowance and are paid beyond it, so set a daily quota in Google Cloud. Android shows the same page in a WebView after asking for location permission. Still to verify: on a real phone on a trotro.
+Notes: requested by management ("like Bolt"). Uses the Maps JavaScript API (website-restricted key) and the Routes API (without live traffic, the cheaper tier) through the web app's `/api/route` function with a private `GOOGLE_ROUTES_KEY`, shared through the edge cache for a week; both have a free monthly allowance and are paid beyond it, so set a daily quota in Google Cloud. Android shows the same page in a WebView after asking for location permission. Still to verify: on a real phone on a trotro.
 
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.
