@@ -26,6 +26,8 @@ scripts/test-db.sh  Applies migrations to a fresh database and runs the access-r
 
 ## What the skeleton already does
 
+**Design:** Ghana colours (green for actions, red for emergencies and warnings, gold for highlights, the flag stripe with the black star as our mark), large text and strong contrast for sunlight. Bottom tabs: Home, My trips, Safety, Settings. Results show the ways to travel as cards to swipe and tap when there is a choice.
+
 - **Fare search (P1-FARE):** pick a start and destination. Each option shows the official fare, what people paid this week, when it was last checked, and the departure pattern. Works without an account.
 - **Fair price check (P1-ALERT):** type the fare the mate asks for and see "Above normal fare" if it is more than 10% over.
 - **Offline:** stations and fares you have searched are saved on the phone and shown with an "Offline" notice when there is no data.

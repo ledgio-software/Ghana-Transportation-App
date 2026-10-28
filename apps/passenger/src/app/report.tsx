@@ -111,7 +111,7 @@ export default function ReportScreen() {
           <Pressable
             key={d}
             accessibilityRole="radio"
-            accessibilityState={{ checked: day === d }}
+            aria-checked={day === d}
             onPress={() => setDay(d)}
             style={[styles.choice, day === d && styles.choiceOn]}
           >

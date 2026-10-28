@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { colors, font, space } from '../lib/theme';
+import { colors, font, ghana, radius, space } from '../lib/theme';
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   muted: { color: colors.muted },
   button: {
     minHeight: 52,
-    borderRadius: 10,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.md,
@@ -94,8 +94,51 @@ const styles = StyleSheet.create({
   buttonPressed: { opacity: 0.8 },
   buttonLabel: { color: colors.primaryText, fontSize: font.body, fontWeight: '700' },
   buttonLabelSecondary: { color: colors.primary },
-  notice: { padding: space.md, borderRadius: 10, backgroundColor: colors.surface },
-  noticeWarning: { backgroundColor: '#FFF4D6' },
-  noticeDanger: { backgroundColor: '#FCE4E2' },
+  notice: { padding: space.md, borderRadius: radius.md, backgroundColor: colors.surface, borderLeftWidth: 4, borderLeftColor: colors.primary },
+  noticeWarning: { backgroundColor: colors.accentSoft, borderLeftColor: ghana.gold },
+  noticeDanger: { backgroundColor: colors.dangerSoft, borderLeftColor: colors.danger },
   loading: { padding: space.lg, alignItems: 'center', gap: space.sm },
 });
+
+/** The flag as a thin band: red, gold with the black star, green. Our mark across the app. */
+export function FlagStripe({ height = 6 }: { height?: number }) {
+  return (
+    <View style={[stripe.row, { height }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={[stripe.band, { backgroundColor: ghana.red }]} />
+      <View style={[stripe.band, stripe.middle, { backgroundColor: ghana.gold }]}>
+        {height >= 12 && <Text style={[stripe.star, { fontSize: height }]}>★</Text>}
+      </View>
+      <View style={[stripe.band, { backgroundColor: ghana.green }]} />
+    </View>
+  );
+}
+
+/** A white rounded panel, the base of cards across the app. */
+export function Card({ children, accent }: { children: ReactNode; accent?: boolean }) {
+  return <View style={[cardStyles.card, accent && cardStyles.accent]}>{children}</View>;
+}
+
+const stripe = StyleSheet.create({
+  row: { flexDirection: 'row', overflow: 'hidden' },
+  band: { flex: 1 },
+  middle: { alignItems: 'center', justifyContent: 'center' },
+  star: { color: ghana.black, lineHeight: undefined },
+});
+
+const cardStyles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.background,
+    borderRadius: radius.lg,
+    padding: space.md,
+    gap: space.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  accent: { borderTopWidth: 4, borderTopColor: ghana.gold },
+});
+

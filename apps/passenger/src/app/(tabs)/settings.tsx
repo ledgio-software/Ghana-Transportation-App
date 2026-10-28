@@ -1,11 +1,11 @@
 import { LANGUAGE_NAMES, LANGUAGES, maskPhone } from '@gta/shared';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Body, Button, Screen, Title } from '../components/ui';
-import { useI18n } from '../lib/i18n';
-import { useSession } from '../lib/session';
-import { supabase } from '../lib/supabase';
-import { colors, font, space } from '../lib/theme';
+import { Body, Button, Screen, Title } from '../../components/ui';
+import { useI18n } from '../../lib/i18n';
+import { useSession } from '../../lib/session';
+import { supabase } from '../../lib/supabase';
+import { colors, font, space } from '../../lib/theme';
 
 export default function SettingsScreen() {
   const { t, lang, setLang } = useI18n();
@@ -20,7 +20,7 @@ export default function SettingsScreen() {
           <Pressable
             key={code}
             accessibilityRole="radio"
-            accessibilityState={{ checked: lang === code }}
+            aria-checked={lang === code}
             onPress={() => setLang(code)}
             style={[styles.choice, lang === code && styles.choiceOn]}
           >

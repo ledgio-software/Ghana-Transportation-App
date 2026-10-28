@@ -1,7 +1,8 @@
-import { checkFare, type FareOption, formatPesewas, parseCedisToPesewas, type StationRow } from '@gta/shared';
+import { checkFare, type FareOption, formatDuration, formatPesewas, parseCedisToPesewas, type StationRow } from '@gta/shared';
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FareCard } from '../components/FareCard';
 import { RouteMap } from '../components/RouteMap';
 import { TripWeather } from '../components/TripWeather';
@@ -13,7 +14,7 @@ import { useConsents } from '../lib/consent';
 import { useSavedTrips } from '../lib/saved';
 import { enqueue } from '../lib/outbox';
 import { useSession } from '../lib/session';
-import { colors, font, space } from '../lib/theme';
+import { colors, font, ghana, radius, space } from '../lib/theme';
 
 /** P1-FARE results with the P1-ALERT fair price check under each option. */
 export default function ResultsScreen() {
@@ -47,6 +48,9 @@ export default function ResultsScreen() {
   }, []);
   const origin = useMemo(() => stations?.find((s) => s.id === from), [stations, from]);
   const destination = useMemo(() => stations?.find((s) => s.id === to), [stations, to]);
+  // The option shown in full below the cards; the first (cheapest listed) until one is tapped.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = fares?.find((f) => f.fare_id === selectedId) ?? fares?.[0] ?? null;
   const durations = fares?.map((f) => f.typical_duration_min).filter((d): d is number => d != null) ?? [];
   // Without a typical duration, assume an hour: the arrival window is two hours wide anyway.
   const durationMin = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 60;
@@ -63,13 +67,12 @@ export default function ResultsScreen() {
       )}
       {!fares && !failed && <Loading label={t('common.loading')} />}
       {fares && fares.length === 0 && <Body>{t('fare.none')}</Body>}
-      {fares && fares.length > 0 && origin && destination && (
-        <TripWeather origin={origin} destination={destination} durationMin={durationMin} />
+      {fares && fares.length > 1 && (
+        <FareOptions fares={fares} selectedId={selected?.fare_id} onSelect={setSelectedId} />
       )}
-      {fares && fares.length > 0 && <SaveTrip from={from} to={to} routeIds={[...new Set(fares.map((f) => f.route_id))]} />}
-      {fares?.map((fare) => (
-        <View key={fare.fare_id} style={styles.option}>
-          <FareCard fare={fare} />
+      {selected && (
+        <View style={styles.option}>
+          <FareCard fare={selected} />
           {reportsOn && (
             <Button
               label={t('report.button')}
@@ -78,22 +81,73 @@ export default function ResultsScreen() {
                 router.push({
                   pathname: '/report',
                   params: {
-                    route_id: fare.route_id,
-                    operator_id: fare.operator_id ?? '',
-                    vehicle_type: fare.vehicle_type,
-                    class: fare.class,
-                    label: [title, fare.operator_name, fare.vehicle_type_name].filter(Boolean).join(' · '),
+                    route_id: selected.route_id,
+                    operator_id: selected.operator_id ?? '',
+                    vehicle_type: selected.vehicle_type,
+                    class: selected.class,
+                    label: [title, selected.operator_name, selected.vehicle_type_name].filter(Boolean).join(' · '),
                   },
                 })
               }
             />
           )}
-          <FareCheck fare={fare} reportsOn={reportsOn} />
+          <FareCheck key={selected.fare_id} fare={selected} reportsOn={reportsOn} />
         </View>
-      ))}
+      )}
+      {fares && fares.length > 0 && origin && destination && (
+        <TripWeather origin={origin} destination={destination} durationMin={durationMin} />
+      )}
+      {fares && fares.length > 0 && <SaveTrip from={from} to={to} routeIds={[...new Set(fares.map((f) => f.route_id))]} />}
       {fares && origin && destination && <RouteMap origin={origin} destination={destination} />}
       {fares && fares.length > 0 && <TripSafety routeId={fares[0]!.route_id} label={title} />}
     </Screen>
+  );
+}
+
+/** Ways to travel as cards you swipe through and tap, like ride apps (only when there is a choice). */
+function FareOptions({
+  fares,
+  selectedId,
+  onSelect,
+}: {
+  fares: FareOption[];
+  selectedId?: string;
+  onSelect: (id: string) => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <View style={styles.options}>
+      <Text style={styles.optionsTitle}>{t('fare.options')}</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.optionsRow} accessibilityRole="radiogroup">
+        {fares.map((fare) => {
+          const on = fare.fare_id === selectedId;
+          const pesewas = fare.official_pesewas ?? fare.reported_median_pesewas;
+          const price = pesewas != null ? formatPesewas(pesewas) : '—';
+          const name = [fare.operator_name, fare.vehicle_type_name, fare.class !== 'standard' ? fare.class : null]
+            .filter(Boolean)
+            .join(' · ');
+          return (
+            <Pressable
+              key={fare.fare_id}
+              accessibilityRole="radio"
+              aria-checked={on}
+              accessibilityLabel={t('fare.option', { name, price })}
+              onPress={() => onSelect(fare.fare_id)}
+              style={[styles.optionCard, on && styles.optionCardOn]}
+            >
+              <Ionicons name={fare.vehicle_type === 'bus' ? 'bus' : 'car'} size={26} color={on ? ghana.gold : colors.primary} />
+              <Text style={[styles.optionName, on && styles.optionTextOn]} numberOfLines={2}>
+                {name}
+              </Text>
+              <Text style={[styles.optionPrice, on && styles.optionTextOn]}>{price}</Text>
+              {fare.typical_duration_min ? (
+                <Text style={[styles.optionMeta, on && styles.optionTextOn]}>{formatDuration(fare.typical_duration_min * 60)}</Text>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -221,6 +275,24 @@ function FareCheck({ fare, reportsOn }: { fare: FareOption; reportsOn: boolean }
 
 const styles = StyleSheet.create({
   option: { gap: space.sm, marginBottom: space.md },
+  options: { gap: space.sm },
+  optionsTitle: { fontSize: font.small, color: colors.muted, fontWeight: '700', textTransform: 'uppercase' },
+  optionsRow: { gap: space.sm, paddingRight: space.md },
+  optionCard: {
+    width: 150,
+    minHeight: 140,
+    padding: space.md,
+    gap: space.xs,
+    borderRadius: radius.lg,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  optionCardOn: { backgroundColor: colors.primary, borderColor: colors.primary },
+  optionName: { fontSize: font.small, fontWeight: '600', color: colors.text },
+  optionPrice: { fontSize: font.amount, fontWeight: '800', color: colors.text },
+  optionMeta: { fontSize: font.small, color: colors.muted },
+  optionTextOn: { color: colors.primaryText },
   save: { gap: space.sm, marginBottom: space.md },
   check: { gap: space.sm, paddingHorizontal: space.xs },
   label: { fontSize: font.small, color: colors.muted, fontWeight: '600' },

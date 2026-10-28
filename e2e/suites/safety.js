@@ -41,7 +41,8 @@ module.exports = {
         uploads.push({ path: decodeURIComponent(new URL(req.url()).pathname.split('/object/report-photos/')[1]), size: req.postDataBuffer()?.length ?? 0 });
         await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ Key: 'report-photos/x', Id: 'x' }) });
       });
-      await page.goto(`${base}/`);
+      // From the Safety tab.
+      await page.goto(`${base}/safety`);
       await page.getByRole('button', { name: 'Report a driver' }).click();
       await page.getByRole('radio', { name: 'Reckless driving' }).click();
       await page.getByLabel('Number plate (if you saw it)').fill('gr  1234-24');

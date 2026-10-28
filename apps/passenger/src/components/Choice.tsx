@@ -23,7 +23,7 @@ export function Choices<T extends string>({
           <Pressable
             key={o.value}
             accessibilityRole={multiple ? 'checkbox' : 'radio'}
-            accessibilityState={{ checked: on }}
+            aria-checked={on}
             onPress={() => onToggle(o.value)}
             style={[styles.choice, on && styles.choiceOn]}
           >
