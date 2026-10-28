@@ -10,19 +10,20 @@ import { LEGAL_VERSIONS } from './legal';
 
 /** The company details the documents name. Fill in once known; brackets mark what is missing. */
 export const LEGAL_ENTITY = {
-  name: '[Company name]',
-  address: '[Registered address], Accra, Ghana',
-  email: '[privacy@your-domain.com]',
-  dpcRegistration: '[DPC registration number]',
-  /** Supabase → Project settings → General shows it. */
-  dataRegion: '[database region, for example Europe (Frankfurt)]',
+  name: 'Alpha Group of Developers Software Solutions',
+  address: 'GW-1127-8862 (GhanaPost GPS), Accra, Ghana',
+  email: 'developershu26@gmail.com',
+  /** Empty until the Data Protection Commission gives one; the policy then says registration is in progress. */
+  dpcRegistration: '',
+  /** Supabase → Project settings → General shows it (eu-west-2). */
+  dataRegion: 'Europe (London, United Kingdom)',
   website: 'https://ghana-transportation-app-passenger.vercel.app',
 } as const;
 
 export type LegalEntity = { [K in keyof typeof LEGAL_ENTITY]: string };
 
 /** Date of the current text, shown as "Last updated". */
-export const LEGAL_UPDATED = '29 October 2026';
+export const LEGAL_UPDATED = '28 October 2026';
 
 /** True until the lawyer approves the text; the app then stops showing the draft notice. */
 export const LEGAL_IS_DRAFT = true;
@@ -51,7 +52,11 @@ export function privacyPolicy(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
       {
         heading: '1. Who we are',
         blocks: [
-          `Ghana Transport ("the app") is run by ${e.name}, ${e.address} ("we", "us"). We are the data controller for the personal data described here, and we are registered with the Data Protection Commission of Ghana (registration number ${e.dpcRegistration}).`,
+          `Ghana Transport ("the app") is run by ${e.name}, ${e.address} ("we", "us"). We are the data controller for the personal data described here. ${
+            e.dpcRegistration
+              ? `We are registered with the Data Protection Commission of Ghana (registration number ${e.dpcRegistration}).`
+              : 'Our registration with the Data Protection Commission of Ghana is in progress.'
+          }`,
           `This policy explains what personal data we collect, why, who sees it, how long we keep it and your rights under the Data Protection Act, 2012 (Act 843). It covers the Android app, the website and iPhone home-screen app at ${e.website}, and the "follow a trip" page that family open from a shared link.`,
           `Questions or requests: ${e.email}.`,
         ],
@@ -304,7 +309,7 @@ export function termsOfUse(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
 /** The document as Markdown, for docs/legal and for the lawyer. */
 export function legalMarkdown(doc: LegalDocument, draft: boolean = LEGAL_IS_DRAFT): string {
   const out = [`# ${doc.title}`, '', `Version ${doc.version} · Last updated ${doc.updated}`, ''];
-  if (draft) out.push('> **Draft for legal review.** Not yet approved by a lawyer. Text in [brackets] is still to be filled in.', '');
+  if (draft) out.push('> **Draft for legal review.** Not yet approved by a lawyer.', '');
   for (const section of doc.sections) {
     out.push(`## ${section.heading}`, '');
     for (const block of section.blocks) {

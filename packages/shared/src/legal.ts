@@ -4,8 +4,8 @@
  * asked to agree again before reporting.
  */
 export const LEGAL_VERSIONS = {
-  terms: '2026-10-draft-2',
-  privacy: '2026-10-draft-2',
+  terms: '2026-10-draft-3',
+  privacy: '2026-10-draft-3',
 } as const;
 
 export type ConsentType = 'terms' | 'privacy' | 'location' | 'share_with_contacts' | 'marketing';

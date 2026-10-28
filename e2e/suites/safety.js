@@ -9,7 +9,7 @@ module.exports = {
   app: 'passenger',
   session: 'passenger',
   setup: `insert into consents (user_id, consent_type, document_version, granted) values
-    ('${PASSENGER}', 'terms', '2026-10-draft-2', true), ('${PASSENGER}', 'privacy', '2026-10-draft-2', true);
+    ('${PASSENGER}', 'terms', '2026-10-draft-3', true), ('${PASSENGER}', 'privacy', '2026-10-draft-3', true);
   insert into emergency_contacts (name, phone, kind, sort_order) values ('MTTD Accra (test)', '0302000000', 'road_safety', 60);`,
   async run({ page, base, step, browser }) {
     await step('one tap on the home screen dials 112; every number is one tap away, signed out', async () => {

@@ -1,16 +1,16 @@
 # Privacy Policy
 
-Version 2026-10-draft-2 · Last updated 29 October 2026
+Version 2026-10-draft-3 · Last updated 28 October 2026
 
-> **Draft for legal review.** Not yet approved by a lawyer. Text in [brackets] is still to be filled in.
+> **Draft for legal review.** Not yet approved by a lawyer.
 
 ## 1. Who we are
 
-Ghana Transport ("the app") is run by [Company name], [Registered address], Accra, Ghana ("we", "us"). We are the data controller for the personal data described here, and we are registered with the Data Protection Commission of Ghana (registration number [DPC registration number]).
+Ghana Transport ("the app") is run by Alpha Group of Developers Software Solutions, GW-1127-8862 (GhanaPost GPS), Accra, Ghana ("we", "us"). We are the data controller for the personal data described here. Our registration with the Data Protection Commission of Ghana is in progress.
 
 This policy explains what personal data we collect, why, who sees it, how long we keep it and your rights under the Data Protection Act, 2012 (Act 843). It covers the Android app, the website and iPhone home-screen app at https://ghana-transportation-app-passenger.vercel.app, and the "follow a trip" page that family open from a shared link.
 
-Questions or requests: [privacy@your-domain.com].
+Questions or requests: developershu26@gmail.com.
 
 ## 2. Using the app without an account
 
@@ -77,7 +77,7 @@ Under Act 843 you have the right to:
 - Withdraw consent or object: turn off news about new features in Settings, stop sharing a trip, turn off location for the app in your phone's settings, or email us.
 - Complain to the Data Protection Commission of Ghana (https://www.dataprotection.org.gh) if you think we have not handled your data properly. We would like the chance to put it right first.
 
-For anything you cannot do in the app, email [privacy@your-domain.com]. We may ask you to confirm your phone number so we do not give your data to someone else. We will reply as soon as we can, within the time the law allows.
+For anything you cannot do in the app, email developershu26@gmail.com. We may ask you to confirm your phone number so we do not give your data to someone else. We will reply as soon as we can, within the time the law allows.
 
 ## 9. How we protect your data
 
@@ -93,4 +93,4 @@ We will tell you in the app when this policy changes. For important changes we w
 
 ## 12. Contact us
 
-[Company name], [Registered address], Accra, Ghana. Email: [privacy@your-domain.com].
+Alpha Group of Developers Software Solutions, GW-1127-8862 (GhanaPost GPS), Accra, Ghana. Email: developershu26@gmail.com.
