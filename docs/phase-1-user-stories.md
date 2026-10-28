@@ -20,7 +20,7 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-FARE Fare directory | 4 | 2 | 0 | 2 | Device lab for speed and data targets |
 | P1-ALERT Fair price check | 2 | 1 | 1 | 0 | Device test on a 2 GB phone |
 | P1-REPORT Crowd reports | 5 | 4 | 0 | 1 | — |
-| P1-TRIP Route and ETA | 3 | 0 | 2 | 1 | Google Maps Embed key (map inside the app); Routes API through an Edge Function (ETA) |
+| P1-TRIP Route and ETA | 4 | 0 | 3 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
 | P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
 | P1-SAFE Safety | 4 | 2 | 2 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check |
@@ -28,7 +28,7 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
 | P1-ADMIN Admin dashboard | 7 | 5 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **45** | **22** | **13** | **10** | |
+| **Total** | **46** | **22** | **14** | **10** | |
 
 ---
 
@@ -165,6 +165,14 @@ Notes: the database already supports this (`overcharge_reports.kind`, `vehicle_p
 - I can open the same directions in Google Maps. *maps › directions open in Google Maps*
 
 Notes: the map inside the app uses the free Google Maps Embed API and needs `EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY`, restricted to the web app's address and to the Embed API. Without it, only the Google Maps link shows. The key for the hosted web app (Google Cloud project `ghana-transport`) is in `apps/passenger/.env.production`. Still to verify: the map on an Android phone.
+
+### P1-TRIP-04 Live map while travelling · Should · Owner: product lead · **Built**
+- From the results I open a full-screen live map: the road route between the stations, a blue dot where I am, and the time and distance left. *live-map › the dot starts at Circle with the whole trip left*
+- As I move, the dot moves (snapped to the road when GPS is a little off) and the time left counts down; the map follows me until I move it by hand, then "Follow me" brings it back. *live-map › moving along the road…*, *live-map › dragging the map…*
+- I am told when I leave the route and when I arrive; without location permission I am told how to allow it. *live-map › leaving the road says so*, *live-map › arriving says so*, *live-map › start the live map…*
+- The route is kept on the phone for a week, so reopening it costs no data or Google calls. *live-map › the route is kept on the phone*; `packages/shared/test/route-progress.test.ts`
+
+Notes: requested by management ("like Bolt"). Uses the Maps JavaScript API and the Routes API (without live traffic, the cheaper tier) with the same website-restricted key; both have a free monthly allowance and are paid beyond it, so set a daily quota in Google Cloud. Android shows the same page in a WebView after asking for location permission. Still to verify: on a real phone on a trotro.
 
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.

@@ -9,6 +9,7 @@ import { loadAppVersion } from '../lib/api';
 import { I18nProvider, useI18n } from '../lib/i18n';
 import { flush } from '../lib/outbox';
 import { SessionProvider, useSession } from '../lib/session';
+import '../lib/staleBuild';
 import { colors } from '../lib/theme';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
@@ -96,6 +97,7 @@ function AppStack() {
         <Stack.Screen name="emergency" options={{ title: t('sos.title') }} />
         <Stack.Screen name="report-driver" options={{ title: t('driver.reportTitle') }} />
         <Stack.Screen name="rate-driver" options={{ title: t('rate.title') }} />
+        <Stack.Screen name="live-map" options={{ title: t('live.title') }} />
       </Stack>
     </VersionGate>
   );

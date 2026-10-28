@@ -11,5 +11,6 @@ export * from './legal';
 export * from './maps';
 export * from './weather';
 export * from './safety';
+export * from './route-progress';
 export * from './i18n';
 export type * from './database';

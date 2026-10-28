@@ -41,6 +41,12 @@
           "cameraPermission": "Ghana Transport uses the camera so you can photograph a vehicle for a report.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Ghana Transport shows where you are on your route while the live map is open."
+        }
       ]
     ],
     "experiments": {
