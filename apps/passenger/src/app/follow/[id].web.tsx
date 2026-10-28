@@ -17,7 +17,7 @@ const REFRESH_MS = 15_000;
 type Loaded = { status: 'loading' } | { status: 'missing' } | { status: 'failed' } | { status: 'ok'; trip: SharedTrip };
 
 /**
- * P1-SAFE-04: the page family open from a "Share my trip" link. No sign-in. Shows the route
+ * P1-SAFE-05: the page family open from a "Share my trip" link. No sign-in. Shows the route
  * and the traveller's latest position, refreshed every 15 s, until the trip ends.
  */
 export default function FollowScreen() {

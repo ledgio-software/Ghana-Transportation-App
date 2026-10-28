@@ -18,3 +18,4 @@ One record per decision required by Phase 0 doc 7.4. Status: Accepted, Proposed 
 | 0012 | [Data retention periods](0012-retention.md) | Proposed (needs lawyer) |
 | 0013 | [Weather provider](0013-weather.md) | Accepted |
 | 0014 | [Photos on driver reports](0014-report-photos.md) | Accepted |
+| 0015 | [Share my trip](0015-share-my-trip.md) | Accepted |

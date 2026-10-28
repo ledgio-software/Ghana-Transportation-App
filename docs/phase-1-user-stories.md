@@ -23,12 +23,12 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-TRIP Route and ETA | 4 | 0 | 3 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
 | P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
-| P1-SAFE Safety | 4 | 2 | 2 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check |
-| P1-OFF Offline | 2 | 1 | 1 | 0 | Hazard radar (offline alerts) |
+| P1-SAFE Safety | 5 | 2 | 3 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check; share-my-trip check on a real phone |
+| P1-OFF Offline | 3 | 1 | 2 | 0 | Hazard radar (offline alerts); iPhone home-screen check |
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
-| P1-ADMIN Admin dashboard | 7 | 5 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
+| P1-ADMIN Admin dashboard | 8 | 6 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **46** | **22** | **14** | **10** | |
+| **Total** | **49** | **23** | **16** | **10** | |
 
 ---
 
@@ -237,6 +237,15 @@ Notes: photos live in the private `report-photos` bucket (5 MB each). Reports an
 - Staff see each report with its photos, and record who they forwarded it to (MTTD, NRSA, the operator), close it or reject it. Reporters' details are never shown. *safety-admin › driver report shows with its photo; forwarding needs a recipient*
 - Staff see recent ratings and the average. *safety-admin › ratings with the average*
 
+### P1-SAFE-05 Share my trip · Should · Owner: product lead · **Built**
+As a traveller, I want my family to see where I am until I arrive.
+- On the live map I tap "Share my trip" and send a link by WhatsApp, SMS, copy or the phone's share menu. No sign-in needed. *share-trip › share my trip gives a family link to send on WhatsApp*
+- Family open the link in any browser, without the app or an account, and see the route, my dot and the time left, updated every 15 seconds, with "Updated N min ago" and a warning when it goes quiet. *share-trip › family open the link…*; *share-trip › the dot moves on the family page…*
+- Sharing stops when I tap "Stop sharing", when I arrive, or after 6 hours. Then the family page says the trip ended and no longer shows where I am. *share-trip › stop sharing…*; *share-trip › arriving stops sharing by itself*
+- The link cannot move the dot or stop the share (only my phone holds the secret), only my latest position is kept, it is cleared when sharing stops, and the share is deleted a day after it ends. `supabase/tests/rls_test.sql`
+
+Notes: the position is sent only while the live map is open on my phone (it says so). ADR 0015. Still to verify: on a real Android phone and an iPhone home-screen app, with the screen locked.
+
 ## P1-OFF Offline
 
 ### P1-OFF-01 Saved fares work with no data · Must · Owner: tech lead · **Built**
@@ -246,6 +255,12 @@ Notes: photos live in the private `report-photos` bucket (5 MB each). Reports an
 
 Tests: *reports › offline: saved fares and the fair-price check still work*.
 
+### P1-OFF-03 The web app opens with no data · Must · Owner: tech lead · **Built**
+- After one visit, the iPhone home-screen app (the website) opens with no network, including screens I have not opened yet, and shows the stations and fares saved on the phone. *offline ›* all steps
+- When online, a new version shows at once (pages come from the network first).
+
+Notes: `apps/passenger/public/sw.js`. It saves the app's own files only (about 300 KB, mostly already downloaded); data stays with P1-OFF-01. Still to verify: on an iPhone home-screen app in airplane mode.
+
 ### P1-OFF-02 Reports queue offline · Must · Owner: tech lead · **Done**
 See P1-REPORT-02.
 
@@ -253,7 +268,9 @@ See P1-REPORT-02.
 
 ### P1-NOTIF-01 Saved trips and fare-change alerts in the app · Must · Owner: product lead · **Done**
 As a daily commuter, I want to save my usual trips and know when their fare changes.
-- On the results screen, I can save the trip. Saved trips are listed on the home screen, and I can remove them.
+- On the results screen, I can save the trip. Saved trips are listed on the home screen and the Trips tab, and I can remove them.
+- Each saved trip shows its cheapest fare and whether rain or flooding is expected if I left now. *saved › signed out: a trip is saved on the phone with its fare and weather…*
+- Signed out, the trip is saved on this phone; it moves to my account when I sign in, and only then do fare-change alerts start.
 - When staff or an import change a saved route's fare, I see "Fare changes on your trips: N new". The alert shows the old and new price. Opening it marks it read.
 - Confirming an unchanged fare does not alert anyone. People who turned alerts off, or didn't save the route, get nothing.
 
@@ -308,6 +325,9 @@ Tests: *import ›* all steps; `packages/shared/test/imports.test.ts`; database 
 - They cannot change the amounts. The decision records who made it.
 
 Tests: *admin › reports: accept and reject*; database test "moderators cannot edit report amounts".
+
+### P1-ADMIN-08 Overcharging hotspots · Should · Owner: operations lead · **Done**
+- Staff see the routes where passengers reported overcharging or short drops in the last 30 days, most reports first, with the average extra asked. Rejected reports are left out. *hotspots › hotspots list routes by overcharge reports in the last 30 days*
 
 ### P1-ADMIN-07 Hazard zone editor · Must · Owner: data lead · **Not started**
 - Staff draw or enter hotspots and diversions, set the alert radius and attach the audio clip.

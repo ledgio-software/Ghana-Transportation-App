@@ -1,4 +1,4 @@
-// P1-SAFE-04 "Share my trip": the traveller sends a link; family open it and follow the dot
+// P1-SAFE-05 "Share my trip": the traveller sends a link; family open it and follow the dot
 // until the traveller stops sharing. No sign-in on either side.
 const { CIRCLE, MIDWAY, KASOA, fakeGoogle } = require('../fake-google');
 const { sql } = require('../lib');

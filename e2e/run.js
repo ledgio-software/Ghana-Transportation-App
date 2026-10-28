@@ -96,6 +96,10 @@ async function startPostgrest() {
     passenger: await lib.serveStatic(DIST.passenger, 8091, { spa: true }),
   };
   const browser = await chromium.launch();
+  // The web app's offline worker (public/sw.js) would hide requests from page.route stand-ins;
+  // only the offline suite turns it on.
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = (options = {}) => newContext({ serviceWorkers: 'block', ...options });
   const results = [];
 
   for (const suite of suites) {

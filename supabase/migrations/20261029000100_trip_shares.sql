@@ -1,4 +1,4 @@
--- P1-SAFE-04 "Share my trip": the traveller sends family a link, and the family page shows where
+-- P1-SAFE-05 "Share my trip": the traveller sends family a link, and the family page shows where
 -- they are until they arrive (ADR 0015).
 --
 -- No sign-in needed and no account linked: a share is a random link id (public, in the link)

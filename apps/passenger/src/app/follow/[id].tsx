@@ -6,7 +6,7 @@ import { useI18n } from '../../lib/i18n';
 
 const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL ?? '').replace(/\/$/, '');
 
-/** P1-SAFE-04 on Android: the family page from the website (follow/[id].web.tsx) in a WebView. */
+/** P1-SAFE-05 on Android: the family page from the website (follow/[id].web.tsx) in a WebView. */
 export default function FollowScreen() {
   const { t } = useI18n();
   const { id } = useLocalSearchParams<{ id: string }>();

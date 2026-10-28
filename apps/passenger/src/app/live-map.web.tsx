@@ -31,7 +31,7 @@ export default function LiveMapScreen() {
   const [following, setFollowing] = useState(true);
   const mapDiv = useRef<HTMLDivElement | null>(null);
   const map = useRef<{ maps: any; map: any; dot?: any } | null>(null);
-  // P1-SAFE-04: share the trip with family.
+  // P1-SAFE-05: share the trip with family.
   const [share, setShare] = useState<TripShare | null>(() => (from && to ? currentShare(from, to) : null));
   const [panel, setPanel] = useState(false);
   const [shareFailed, setShareFailed] = useState(false);

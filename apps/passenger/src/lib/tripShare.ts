@@ -3,7 +3,7 @@ import { readCache, writeCache } from './storage';
 import { supabase } from './supabase';
 
 /**
- * P1-SAFE-04 "Share my trip". The phone keeps the share's secret; the link only carries the
+ * P1-SAFE-05 "Share my trip". The phone keeps the share's secret; the link only carries the
  * public id, so whoever has the link can watch but cannot move the dot or stop the share.
  */
 export interface TripShare {

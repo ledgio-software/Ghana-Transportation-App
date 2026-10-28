@@ -119,4 +119,4 @@ If any step fails, note the step and the error message shown. The function logs 
 
 ## 7. When a new migration is added
 
-If you loaded the database with `setup-dev.sql`, run each new file from `supabase/migrations/` (the ones dated after your last update) in **SQL Editor → New query → Run**, oldest first. With the CLI, `npx supabase db push` does the same. For example, `20261027000100_flood_prone_stations.sql` adds the "Floods in heavy rain" setting used by the weather warnings, and `20261028000100_safety.sql` adds emergency numbers, driver reports, driver ratings and the private `report-photos` storage bucket.
+If you loaded the database with `setup-dev.sql`, run each new file from `supabase/migrations/` (the ones dated after your last update) in **SQL Editor → New query → Run**, oldest first. With the CLI, `npx supabase db push` does the same. For example, `20261027000100_flood_prone_stations.sql` adds the "Floods in heavy rain" setting used by the weather warnings, `20261028000100_safety.sql` adds emergency numbers, driver reports, driver ratings and the private `report-photos` storage bucket, and `20261029000100_trip_shares.sql` adds "Share my trip".
