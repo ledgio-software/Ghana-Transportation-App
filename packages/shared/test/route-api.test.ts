@@ -48,5 +48,16 @@ describe('/api/route', () => {
     const res = await GET(url('from=5.5717,-0.2166&to=5.534,-0.417'));
     expect(res.status).toBe(502);
     expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual({ error: 'routes unavailable (403)' });
+  });
+
+  it("says Google's reason for refusing, so the key setting to fix is clear", async () => {
+    vi.stubEnv('GOOGLE_ROUTES_KEY', 'private-key');
+    const refusal = {
+      error: { code: 403, status: 'PERMISSION_DENIED', details: [{ reason: 'API_KEY_HTTP_REFERRER_BLOCKED' }] },
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(refusal), { status: 403 })));
+    const res = await GET(url('from=5.5717,-0.2166&to=5.534,-0.417'));
+    expect(await res.json()).toEqual({ error: 'routes unavailable (403)', reason: 'API_KEY_HTTP_REFERRER_BLOCKED' });
   });
 });

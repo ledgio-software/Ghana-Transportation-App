@@ -38,29 +38,37 @@ export default function LiveMapScreen() {
   const origin = useMemo(() => stations?.find((s) => s.id === from), [stations, from]);
   const destination = useMemo(() => stations?.find((s) => s.id === to), [stations, to]);
 
-  // The map and the route line.
+  // The map, then the road line. Without a road line (Routes unavailable) the map, the dot and
+  // the straight-line distance still work.
   useEffect(() => {
     if (!KEY || !origin || !destination || !mapDiv.current) return;
     let live = true;
-    Promise.all([loadGoogleMaps(KEY), loadDrivingRoute(origin, destination)])
-      .then(([maps, loaded]) => {
+    const toLatLng = (p: LatLng) => ({ lat: p.latitude, lng: p.longitude });
+    const routePromise = loadDrivingRoute(origin, destination).catch(
+      (): DrivingRoute => ({ path: [origin, destination], durationS: 0, distanceM: 0, approximate: true }),
+    );
+    loadGoogleMaps(KEY)
+      .then(async (maps) => {
         if (!live || !mapDiv.current) return;
-        const toLatLng = (p: LatLng) => ({ lat: p.latitude, lng: p.longitude });
         const m = new maps.Map(mapDiv.current, {
           disableDefaultUI: true,
           zoomControl: true,
           gestureHandling: 'greedy',
           clickableIcons: false,
         });
-        const bounds = new maps.LatLngBounds();
-        loaded.path.forEach((p) => bounds.extend(toLatLng(p)));
-        m.fitBounds(bounds, 48);
-        new maps.Polyline({ map: m, path: loaded.path.map(toLatLng), strokeColor: colors.primary, strokeWeight: 6, strokeOpacity: 0.9 });
         new maps.Marker({ map: m, position: toLatLng(origin), title: origin.name, label: 'A' });
         new maps.Marker({ map: m, position: toLatLng(destination), title: destination.name, label: 'B' });
         // Moving the map by hand stops following until "Follow me".
         m.addListener('dragstart', () => setFollowing(false));
         map.current = { maps, map: m };
+        const loaded = await routePromise;
+        if (!live) return;
+        const bounds = new maps.LatLngBounds();
+        loaded.path.forEach((p) => bounds.extend(toLatLng(p)));
+        m.fitBounds(bounds, 48);
+        if (!loaded.approximate) {
+          new maps.Polyline({ map: m, path: loaded.path.map(toLatLng), strokeColor: colors.primary, strokeWeight: 6, strokeOpacity: 0.9 });
+        }
         setRoute(loaded);
       })
       .catch(() => live && setFailed(true));
@@ -93,7 +101,8 @@ export default function LiveMapScreen() {
   useEffect(() => {
     const current = map.current;
     if (!current || !progress || located.status !== 'ok') return;
-    const shown = progress.offRoute ? located.position : progress.snapped;
+    // Snap to the road only when there is a real road line and the traveller is on it.
+    const shown = progress.offRoute || route?.approximate ? located.position : progress.snapped;
     const position = { lat: shown.latitude, lng: shown.longitude };
     if (!current.dot) {
       current.dot = new current.maps.Marker({
@@ -114,7 +123,7 @@ export default function LiveMapScreen() {
       current.dot.setPosition(position);
     }
     if (following) current.map.panTo(position);
-  }, [progress, located, following, t]);
+  }, [progress, located, following, route, t]);
 
   const destinationName = destination?.name ?? '';
   let status: { text: string; tone: 'info' | 'warning' | 'ok' };
@@ -124,6 +133,7 @@ export default function LiveMapScreen() {
   else if (located.status === 'unavailable') status = { text: t('live.unavailable'), tone: 'warning' };
   else if (!progress) status = { text: t('live.waiting'), tone: 'info' };
   else if (progress.arrived) status = { text: t('live.arrived', { place: destinationName }), tone: 'ok' };
+  else if (route.approximate) status = { text: t('live.straight', { distance: formatDistance(progress.remainingM) }), tone: 'info' };
   else if (progress.offRoute) status = { text: t('live.offRoute', { distance: formatDistance(progress.offRouteM) }), tone: 'warning' };
   else status = { text: t('live.left', { time: formatDuration(progress.remainingS), distance: formatDistance(progress.remainingM) }), tone: 'info' };
 
@@ -134,7 +144,7 @@ export default function LiveMapScreen() {
       <View style={styles.card} accessibilityLiveRegion="polite">
         {destination && <Text style={styles.to}>{t('live.to', { place: destinationName })}</Text>}
         <Text style={[styles.status, status.tone === 'warning' && styles.warning, status.tone === 'ok' && styles.ok]}>{status.text}</Text>
-        {route && !progress?.arrived && <Body muted>{t('live.estimate')}</Body>}
+        {route && !progress?.arrived && <Body muted>{t(route.approximate ? 'live.noRoad' : 'live.estimate')}</Body>}
       </View>
       <View style={styles.actions}>
         {!following && located.status === 'ok' && (

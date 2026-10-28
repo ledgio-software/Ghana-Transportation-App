@@ -183,6 +183,8 @@ export const en = {
   'live.unavailable': 'Your location is not available right now.',
   'live.offRoute': 'You are off the route ({distance} away).',
   'live.arrived': 'You have arrived at {place}.',
+  'live.straight': '{distance} to go in a straight line',
+  'live.noRoad': 'The road route could not be loaded, so the distance is a straight line.',
   'live.recenter': 'Follow me',
   'live.estimate': 'Times are estimates without live traffic.',
   'live.error': 'Could not load the live map. Check your internet and try again.',

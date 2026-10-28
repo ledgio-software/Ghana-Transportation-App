@@ -135,5 +135,18 @@ module.exports = {
       if (counter.routes !== before) throw new Error(`routes requested again (${counter.routes})`);
     });
     await ctx.close();
+
+    await step('without the road route, the map, the dot and the straight-line distance still work', async () => {
+      const offline = await browser.newContext({ viewport: { width: 360, height: 800 }, permissions: ['geolocation'], geolocation: MIDWAY });
+      await offline.route('https://maps.googleapis.com/maps/api/js**', (route) => route.fulfill({ contentType: 'text/javascript', body: FAKE_MAPS }));
+      await offline.route('**/api/route?*', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"routes not configured"}' }));
+      const tab = await offline.newPage();
+      await tab.goto(`${base}${URL_PATH}`);
+      await tab.getByText(/^1\d km to go in a straight line$/).waitFor();
+      await tab.getByText('The road route could not be loaded, so the distance is a straight line.').waitFor();
+      const state = await tab.evaluate(() => ({ lines: window.__fakeMaps.polylines.length, dot: !!window.__fakeMaps.markers.find((m) => m.o.title === 'You are here') }));
+      if (state.lines !== 0 || !state.dot) throw new Error(JSON.stringify(state));
+      await offline.close();
+    });
   },
 };
