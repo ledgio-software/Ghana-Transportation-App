@@ -23,4 +23,4 @@ For safety, a traveller wants family to follow their trip until they arrive (P1-
 
 ## Consequences
 
-The position updates only while the live map is open; the family page shows "Updated N min ago" and warns when it goes quiet. Anyone can start a share without an account; rows are small and deleted within about 31 hours, and a limit can be added if it is abused. The privacy notice should mention trip sharing before launch.
+The position updates only while the live map is open; the family page shows "Updated N min ago" and warns when it goes quiet. Anyone can start a share without an account; rows are small and deleted within about two days, and a limit can be added if it is abused. The Privacy Policy describes trip sharing (sections 3, 5 and 7).

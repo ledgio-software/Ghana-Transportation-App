@@ -24,18 +24,19 @@ export function parsePoint(value: string | null): { latitude: number; longitude:
   return { latitude: Math.round(lat * 1e4) / 1e4, longitude: Math.round(lng * 1e4) / 1e4 };
 }
 
-function json(body: unknown, status: number, cacheS = 0): Response {
+/** `cacheS`: how long the edge cache shares the answer; `browserS`: how long the phone keeps it. */
+export function json(body: unknown, status: number, cacheS = 0, browserS = 86400): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'cache-control': cacheS ? `public, max-age=86400, s-maxage=${cacheS}, stale-while-revalidate=${cacheS}` : 'no-store',
+      'cache-control': cacheS ? `public, max-age=${browserS}, s-maxage=${cacheS}, stale-while-revalidate=${cacheS}` : 'no-store',
     },
   });
 }
 
 /** The machine-readable reason from a Google error body; never contains the key. */
-async function googleReason(res: Response): Promise<string | undefined> {
+export async function googleReason(res: Response): Promise<string | undefined> {
   try {
     const body = (await res.json()) as { error?: { status?: string; details?: { reason?: string }[] } };
     return body.error?.details?.find((d) => d.reason)?.reason ?? body.error?.status;

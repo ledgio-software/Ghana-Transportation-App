@@ -1,13 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Body, Button, Notice, Screen, Title } from '../components/ui';
 import { recordConsents } from '../lib/consent';
 import { useI18n } from '../lib/i18n';
 import { useSession } from '../lib/session';
 import { colors, font, space } from '../lib/theme';
-
-const LEGAL_URL = process.env.EXPO_PUBLIC_LEGAL_URL;
 
 /** P1-LEGAL: terms and privacy agreement, stored as versioned consent records. Marketing is optional. */
 export default function ConsentScreen() {
@@ -46,11 +44,14 @@ export default function ConsentScreen() {
           <Body>{t(key)}</Body>
         </View>
       ))}
-      {LEGAL_URL ? (
-        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(LEGAL_URL)}>
-          <Text style={styles.link}>{t('legal.readFull')}</Text>
+      <View style={styles.links}>
+        <Pressable accessibilityRole="link" onPress={() => router.push('/terms')}>
+          <Text style={styles.link}>{t('legal.terms')}</Text>
         </Pressable>
-      ) : null}
+        <Pressable accessibilityRole="link" onPress={() => router.push('/privacy-policy')}>
+          <Text style={styles.link}>{t('legal.policy')}</Text>
+        </Pressable>
+      </View>
       <View style={styles.toggle}>
         <Text style={styles.toggleLabel}>{t('legal.marketing')}</Text>
         <Switch value={marketing} onValueChange={setMarketing} accessibilityLabel={t('legal.marketing')} />
@@ -64,6 +65,7 @@ export default function ConsentScreen() {
 const styles = StyleSheet.create({
   point: { flexDirection: 'row', gap: space.sm, paddingRight: space.md },
   bullet: { fontSize: font.body, color: colors.primary, lineHeight: 24 },
+  links: { flexDirection: 'row', flexWrap: 'wrap', gap: space.lg },
   link: { fontSize: font.body, color: colors.primary, textDecorationLine: 'underline' },
   toggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
   toggleLabel: { flex: 1, fontSize: font.body, color: colors.text },
