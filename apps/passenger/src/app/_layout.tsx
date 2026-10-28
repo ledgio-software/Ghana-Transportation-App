@@ -97,6 +97,7 @@ function AppStack() {
         <Stack.Screen name="emergency" options={{ title: t('sos.title') }} />
         <Stack.Screen name="report-driver" options={{ title: t('driver.reportTitle') }} />
         <Stack.Screen name="rate-driver" options={{ title: t('rate.title') }} />
+        <Stack.Screen name="live-map" options={{ title: t('live.title') }} />
       </Stack>
     </VersionGate>
   );

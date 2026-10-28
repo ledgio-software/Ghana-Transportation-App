@@ -1,4 +1,5 @@
 import { googleMapsDirectionsUrl, googleMapsEmbedUrl, type StationRow } from '@gta/shared';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../lib/i18n';
@@ -15,11 +16,18 @@ const EMBED_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
  */
 export function RouteMap({ origin, destination }: { origin: StationRow; destination: StationRow }) {
   const { t } = useI18n();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   return (
     <View style={styles.section}>
       <Title>{t('map.title')}</Title>
+      {EMBED_KEY && (
+        <Button
+          label={t('live.start')}
+          onPress={() => router.push({ pathname: '/live-map', params: { from: origin.id, to: destination.id } })}
+        />
+      )}
       {EMBED_KEY &&
         (open ? (
           <>
