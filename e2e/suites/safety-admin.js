@@ -14,7 +14,7 @@ module.exports = {
     insert into driver_ratings (client_id, user_id, rating, tags, route_id, travelled_at) values
       (gen_random_uuid(), '${PASSENGER}', 5, array['safe_driving'], '00000000-0000-4000-8000-000000000301', now()),
       (gen_random_uuid(), '${PASSENGER}', 3, array['rude'], '00000000-0000-4000-8000-000000000301', now());`,
-  async run({ page, base, step }) {
+  async run({ page, base, step, browser }) {
     // Storage is not part of the test stack: sign photo links and serve the photo here.
     await page.route('**/storage/v1/object/sign/report-photos', (route) => {
       const { paths } = route.request().postDataJSON();
@@ -25,6 +25,16 @@ module.exports = {
     });
     await page.route('**/storage/v1/object/sign/report-photos/**', (route) => route.fulfill({ contentType: 'image/png', body: PNG }));
     await page.goto(`${base}/safety`);
+
+    await step('signed out: the staff sign-in page', async () => {
+      const anon = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+      await anon.goto(`${base}/`);
+      await anon.getByRole('heading', { name: 'Ghana Transport Admin' }).waitFor();
+      await anon.getByRole('heading', { name: 'Staff sign in' }).waitFor();
+      await anon.getByLabel('Email').waitFor();
+      await anon.getByLabel('Password').waitFor();
+      await anon.context().close();
+    });
 
     await step('driver report shows with its photo; forwarding needs a recipient', async () => {
       const card = page.getByRole('region', { name: 'Report: Reckless driving' });

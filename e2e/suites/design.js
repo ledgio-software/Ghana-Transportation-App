@@ -1,11 +1,11 @@
 // The redesign: bottom tabs, swap start and destination, and swipeable fare cards when there is a choice.
-const { openResults } = require('../lib');
+const { openResults, sessionFor } = require('../lib');
 
 module.exports = {
   name: 'design',
   app: 'passenger',
   session: 'passenger',
-  async run({ page, base, step }) {
+  async run({ page, base, step, browser }) {
     await step('home: greeting, tabs, and swapping start and destination', async () => {
       await page.goto(`${base}/`);
       await page.getByText('Akwaaba!').waitFor();
@@ -48,6 +48,47 @@ module.exports = {
       if (counts.join(',') !== '1,2') throw new Error(`fare counts ${counts}`);
       await page.getByLabel('Fare you were asked to pay (GH¢)').fill('140');
       await page.getByText('Above normal fare').waitFor();
+    });
+
+    await step('sign in with a phone number: invalid number, code, change number, then agreement', async () => {
+      // Signed out, with Supabase Auth's SMS endpoints answered here (no SMS is sent in tests).
+      const anon = await (await browser.newContext({ viewport: { width: 360, height: 800 } })).newPage();
+      const sent = [];
+      await anon.route('**/auth/v1/otp*', (route) => {
+        sent.push(route.request().postDataJSON().phone);
+        route.fulfill({ contentType: 'application/json', body: '{}' });
+      });
+      await anon.route('**/auth/v1/verify*', (route) => {
+        const body = route.request().postDataJSON();
+        if (body.token !== '123456') return route.fulfill({ status: 403, contentType: 'application/json', body: '{"code":"otp_expired"}' });
+        route.fulfill({ contentType: 'application/json', body: JSON.stringify(sessionFor('passenger')) });
+      });
+      await anon.goto(`${base}/sign-in`);
+      await anon.getByText('Akwaaba! Sign in').waitFor();
+      await anon.getByText('Step 1 of 2').waitFor();
+      // The number box fits beside the +233 prefix on a narrow phone.
+      const box = await anon.getByLabel('Phone number').boundingBox();
+      if (box.x + box.width > 360) throw new Error(`phone box overflows to ${box.x + box.width}px`);
+      await anon.getByLabel('Phone number').fill('123');
+      await anon.getByRole('button', { name: 'Send code' }).click();
+      await anon.getByText('Enter a valid Ghana mobile number.').waitFor();
+      await anon.getByLabel('Phone number').fill('24 000 0001');
+      await anon.getByRole('button', { name: 'Send code' }).click();
+      await anon.getByText('Step 2 of 2').waitFor();
+      await anon.getByText(/We sent a code to \+233/).waitFor();
+      await anon.getByText(/^New code in \d+ s$/).waitFor();
+      await anon.getByLabel('6-digit code').fill('999999');
+      await anon.getByRole('button', { name: 'Verify' }).click();
+      await anon.getByText('That code did not work. Check the SMS and try again.').waitFor();
+      await anon.getByRole('button', { name: 'Change number' }).click();
+      await anon.getByText('Step 1 of 2').waitFor();
+      await anon.getByRole('button', { name: 'Send code' }).click();
+      await anon.getByLabel('6-digit code').fill('123456');
+      await anon.getByRole('button', { name: 'Verify' }).click();
+      // A new account has not agreed to the terms yet, so that comes next.
+      await anon.getByText('Before you report').first().waitFor();
+      if (sent.join(',') !== '+233240000001,+233240000001') throw new Error(sent.join(','));
+      await anon.context().close();
     });
 
     await step('a route with one way to travel shows it directly', async () => {
