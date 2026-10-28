@@ -20,9 +20,8 @@ type Params = { route_id?: string; operator_id?: string; label?: string };
  * the vehicle. Staff review it and forward it to MTTD, NRSA or the operator.
  */
 export default function ReportDriverScreen() {
-  const { t } = useI18n();
   return (
-    <ReportGate title={t('driver.reportTitle')}>
+    <ReportGate reason="reportDriver">
       <ReportDriverForm />
     </ReportGate>
   );
