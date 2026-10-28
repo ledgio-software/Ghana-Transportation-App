@@ -6,6 +6,8 @@ export interface DrivingRoute {
   path: LatLng[];
   durationS: number;
   distanceM: number;
+  /** No road line could be loaded: a straight line between the stations stands in. */
+  approximate?: boolean;
 }
 
 /** Roads between stations rarely change; keep each route on the phone for a week (data). */

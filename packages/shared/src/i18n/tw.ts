@@ -185,6 +185,8 @@ export const tw: Translations = {
   'live.unavailable': 'Yɛnhunu baabi a wowɔ mprempren.',
   'live.offRoute': 'Woafiri kwan no so ({distance}).',
   'live.arrived': 'Woaduru {place}.',
+  'live.straight': '{distance} aka (kwan tee)',
+  'live.noRoad': 'Yɛantumi amfa kwan no amma, enti ntenten no yɛ kwan tee.',
   'live.recenter': 'Di m\'akyi',
   'live.estimate': 'Berɛ no yɛ nsusuiɛ; ɛnhwɛ kaa a ɛwɔ kwan so seesei.',
   'live.error': 'Yɛantumi amfa map no amma. Hwɛ wo data na san bɔ mmɔden.',
