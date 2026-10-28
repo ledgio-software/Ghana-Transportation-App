@@ -34,6 +34,16 @@ function json(body: unknown, status: number, cacheS = 0): Response {
   });
 }
 
+/** The machine-readable reason from a Google error body; never contains the key. */
+async function googleReason(res: Response): Promise<string | undefined> {
+  try {
+    const body = (await res.json()) as { error?: { status?: string; details?: { reason?: string }[] } };
+    return body.error?.details?.find((d) => d.reason)?.reason ?? body.error?.status;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;
   const from = parsePoint(params.get('from'));
@@ -55,7 +65,11 @@ export async function GET(request: Request): Promise<Response> {
       // No live traffic: the cheaper "Essentials" tier, and the answer can be cached for a week.
       body: JSON.stringify({ origin: point(from), destination: point(to), travelMode: 'DRIVE' }),
     });
-    if (!res.ok) return json({ error: `routes unavailable (${res.status})` }, 502);
+    if (!res.ok) {
+      // Google's short reason (e.g. API_KEY_HTTP_REFERRER_BLOCKED) says which setting to fix.
+      const reason = await googleReason(res);
+      return json({ error: `routes unavailable (${res.status})`, ...(reason && { reason }) }, 502);
+    }
     const body = (await res.json()) as {
       routes?: { duration?: string; distanceMeters?: number; polyline?: { encodedPolyline?: string } }[];
     };
