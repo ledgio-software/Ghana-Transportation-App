@@ -105,6 +105,11 @@ export default function SearchScreen() {
           />
         </Card>
       )}
+      <Card>
+        <Title>{t('traffic.title')}</Title>
+        <Body>{t('traffic.why')}</Body>
+        <Button label={t('traffic.button')} variant="secondary" onPress={() => router.push('/traffic')} />
+      </Card>
       {trips.length > 0 && (
         <>
           <Title>{t('saved.title')}</Title>

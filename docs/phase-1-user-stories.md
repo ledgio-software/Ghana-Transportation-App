@@ -20,7 +20,7 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-FARE Fare directory | 4 | 2 | 0 | 2 | Device lab for speed and data targets |
 | P1-ALERT Fair price check | 2 | 1 | 1 | 0 | Device test on a 2 GB phone |
 | P1-REPORT Crowd reports | 5 | 4 | 0 | 1 | — |
-| P1-TRIP Route and ETA | 4 | 0 | 3 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
+| P1-TRIP Route and ETA | 5 | 0 | 4 | 1 | Maps JavaScript API and Routes API enabled on the key; live traffic ETA (Routes API Pro) |
 | P1-WX Weather | 2 | 0 | 2 | 0 | GMet alert feed (harmattan dust, official warnings); flood-prone stations marked by the field team |
 | P1-HAZ Hazard radar | 3 | 0 | 0 | 3 | NRSA hotspot data, field drive-through, Twi audio |
 | P1-SAFE Safety | 5 | 2 | 3 | 0 | Confirmed MTTD/NRSA numbers; hosted photo storage check; share-my-trip check on a real phone |
@@ -28,7 +28,7 @@ Phase 0 doc section 6.2: every Phase 1 feature is written as user stories with a
 | P1-NOTIF Notifications | 3 | 1 | 0 | 2 | Firebase (push); hazard radar |
 | P1-ADMIN Admin dashboard | 8 | 6 | 1 | 1 | Hosted Supabase (real TOTP sign-in) |
 | P1-LEGAL Legal and privacy | 6 | 4 | 2 | 0 | Lawyer-approved texts; hosted delete-account function |
-| **Total** | **49** | **23** | **16** | **10** | |
+| **Total** | **50** | **23** | **17** | **10** | |
 
 ---
 
@@ -173,6 +173,14 @@ Notes: the map inside the app uses the free Google Maps Embed API and needs `EXP
 - The route is kept on the phone for a week, so reopening it costs no data or Google calls. *live-map › the route is kept on the phone*; `packages/shared/test/route-progress.test.ts`
 
 Notes: requested by management ("like Bolt"). Uses the Maps JavaScript API (website-restricted key) and the Routes API (without live traffic, the cheaper tier) through the web app's `/api/route` function with a private `GOOGLE_ROUTES_KEY`, shared through the edge cache for a week; both have a free monthly allowance and are paid beyond it, so set a daily quota in Google Cloud. Android shows the same page in a WebView after asking for location permission. Still to verify: on a real phone on a trotro.
+
+### P1-TRIP-05 Traffic home · Should · Owner: product lead · **Built**
+As a commuter, I want to see where I am and how long it will take to get home in today's traffic.
+- From the home screen, "Check traffic home". The first time, I choose home: "I am at home now: use this place" or the station nearest home. Home is saved on my phone only. *traffic › from the home screen, choose home…*
+- I see "48 min to get home", how much longer than usual because of traffic (light, some, heavy), the distance and the usual time, on a map with Google's live traffic, my blue dot and home. *traffic › shows the minutes home…*
+- It refreshes every 2 minutes and with "Refresh"; at home it just says so. I can change home and open directions in Google Maps. *traffic › refreshes by itself…*; *traffic › home is remembered…*; *traffic › change home…*; *traffic › when the traffic cannot be loaded…*
+
+Notes: drive times come from the Routes API with live traffic (`TRAFFIC_AWARE`, the "Pro" tier) through `/api/traffic`. Positions are rounded to about 100 m and answers shared for 5 minutes (`packages/shared/test/traffic-api.test.ts`). Car times: a trotro that stops often takes longer. Still to verify: on the hosted app with the real key, and the monthly Routes cost (ADR 0009).
 
 ### P1-TRIP-02 Honest travel time with live traffic · Must · Owner: tech lead · **Not started**
 - I see an arrival range (for example "4 h 30 – 6 h"), not one exact time. It uses live traffic plus crowd delay reports for the N6.

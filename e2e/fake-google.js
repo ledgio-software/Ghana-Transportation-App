@@ -26,7 +26,7 @@ function encode(points) {
 
 // Records what the page draws instead of drawing it.
 const FAKE_MAPS = `(() => {
-  const state = (window.__fakeMaps = { polylines: [], markers: [], pans: 0, listeners: {} });
+  const state = (window.__fakeMaps = { polylines: [], markers: [], pans: 0, listeners: {}, traffic: false });
   class LatLngBounds { extend() {} }
   class Map {
     constructor(el) { el.setAttribute('data-map-ready', '1'); }
@@ -35,13 +35,19 @@ const FAKE_MAPS = `(() => {
     getBounds() { return null; }
     addListener(name, fn) { state.listeners[name] = fn; }
   }
-  class Polyline { constructor(o) { state.polylines.push(o.path); } }
+  class Polyline {
+    constructor(o) { this.i = state.polylines.push(o.path) - 1; }
+    setPath(p) { state.polylines[this.i] = p; }
+    setMap(m) { if (!m) state.polylines[this.i] = null; }
+  }
+  class TrafficLayer { setMap(m) { state.traffic = !!m; } }
   class Marker {
     constructor(o) { this.o = o; state.markers.push(this); }
     setPosition(p) { this.o.position = p; }
+    setTitle(t) { this.o.title = t; }
     setMap(m) { if (!m) state.markers.splice(state.markers.indexOf(this), 1); }
   }
-  window.google = { maps: { Map, Polyline, Marker, LatLngBounds, SymbolPath: { CIRCLE: 0 } } };
+  window.google = { maps: { Map, Polyline, Marker, LatLngBounds, TrafficLayer, SymbolPath: { CIRCLE: 0 } } };
   window[new URL(document.currentScript.src).searchParams.get('callback')]();
 })();`;
 

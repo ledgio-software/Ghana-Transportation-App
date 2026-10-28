@@ -14,7 +14,7 @@ Questions or requests: [privacy@your-domain.com].
 
 ## 2. Using the app without an account
 
-You can search fares, see routes, maps and weather, use the live map, call emergency numbers and share a trip without an account. We do not ask who you are for any of this.
+You can search fares, see routes, maps and weather, use the live map and Traffic home, call emergency numbers and share a trip without an account. We do not ask who you are for any of this.
 
 To send reports or get fare-change alerts, you sign in with your phone number and agree to these documents.
 
@@ -28,6 +28,7 @@ To send reports or get fare-change alerts, you sign in with your phone number an
 - Driver reports and ratings: what happened, the vehicle plate, the route, a note, the time, your star rating and up to 3 photos of the vehicle. Used to review the report and, where needed, pass it to the authorities (see section 5).
 - Saved trips and fare-change alerts: the trips you save and the alerts we send you about them.
 - Your location: on your phone only, to show where you are on the live map and how far you have left. We do not store it, except when you share a trip (below).
+- Traffic home: the place you set as home is saved on your phone only. When you check the traffic, your current position and your home, rounded to about 100 metres, are sent through our servers to Google to work out the drive time. We do not save them; our servers keep the answer for up to 5 minutes so nearby requests can share it, and hosting logs may record the request for a short time.
 - Shared trips: when you tap "Share my trip", the two stations, the time, and your latest position while the live map is open. A shared trip is not linked to your account or phone number.
 - Technical data: your IP address, browser or phone type and app version, kept in our hosting providers' logs for security and to fix faults.
 
@@ -48,7 +49,7 @@ Some data is kept on your phone so the app works without network: stations, fare
 - Our staff: trained staff review reports, driver reports and photos. They sign in with two-step verification, and changes they make are logged.
 - Authorities and operators: when a driver report needs action, our staff may pass it to the Police Motor Traffic and Transport Directorate (MTTD), the National Road Safety Authority (NRSA) or the transport operator or union. We share what happened, the plate, the route, the time, your note and the photos, but not your name or phone number, unless you agree or the law requires it.
 - People you share a trip with: anyone who has your link sees your trip and latest position until sharing ends.
-- Service providers who process data for us under contract: Supabase (database, sign-in and photo storage), Vercel (website and web services), our SMS provider (sends sign-in codes), Google Maps Platform (maps and road routes) and MET Norway (weather forecasts). When you open a map, your phone connects to Google, which receives your IP address; Google's privacy policy (https://policies.google.com/privacy) applies to that. Weather and road routes are fetched by our servers with the stations' positions only, not your identity.
+- Service providers who process data for us under contract: Supabase (database, sign-in and photo storage), Vercel (website and web services), our SMS provider (sends sign-in codes), Google Maps Platform (maps and road routes) and MET Norway (weather forecasts). When you open a map, your phone connects to Google, which receives your IP address; Google's privacy policy (https://policies.google.com/privacy) applies to that. Weather and road routes are fetched by our servers with the stations' positions only, not your identity; for Traffic home, our servers send Google your rounded position and home, without your identity.
 - When the law requires: we share data if Ghanaian law, a court order or a lawful request from the authorities requires it.
 
 ## 6. Where your data is stored

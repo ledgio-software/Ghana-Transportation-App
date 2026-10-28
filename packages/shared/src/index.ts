@@ -9,6 +9,7 @@ export * from './csv';
 export * from './imports';
 export * from './legal';
 export * from './legal-text';
+export * from './traffic';
 export * from './maps';
 export * from './weather';
 export * from './safety';
