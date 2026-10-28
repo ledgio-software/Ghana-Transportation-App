@@ -46,6 +46,13 @@ export const tw: Translations = {
   'auth.verify': 'Si so dua',
   'auth.invalidPhone': 'Hyɛ Ghana fon nɔma a ɛyɛ papa.',
   'auth.codeSent': 'Yɛde kood akɔma {phone}.',
+  'auth.welcome': 'Akwaaba! Kɔ mu',
+  'auth.noPassword': 'Wonhia password. Yɛde kood a ɛwɔ nɔma 6 bɛbrɛ wo wɔ SMS so. Woyɛ foforɔ? Saa ara na wobɛbue akawnt.',
+  'auth.step': 'Anammɔn {n} wɔ 2 mu',
+  'auth.changeNumber': 'Sesa nɔma no',
+  'auth.resend': 'Soma kood foforɔ',
+  'auth.resendIn': 'Kood foforɔ wɔ sɛkɛnse {seconds} mu',
+  'auth.wrongCode': 'Kood no anyɛ adwuma. Hwɛ SMS no na san bɔ mmɔden.',
 
   'report.button': 'Ka nea wotuaeɛ',
   'report.title': 'Ɛyɛ sɛn na wotuaeɛ?',

@@ -1,8 +1,5 @@
 import type { ForecastPeriod } from '@gta/shared';
-import { Platform } from 'react-native';
-
-// The web app calls its own /api/weather; the Android app calls the same function on the web app.
-const API_BASE = Platform.OS === 'web' ? '' : (process.env.EXPO_PUBLIC_WEB_URL ?? '').replace(/\/$/, '');
+import { API_BASE } from './apiBase';
 
 /** Forecast for one place. Rounded to about 1 km so nearby searches share the cached answer. */
 export async function loadForecast(place: { latitude: number; longitude: number }): Promise<ForecastPeriod[]> {

@@ -15,16 +15,25 @@ export default function SignInPage() {
   }, [state, router]);
 
   return (
-    <>
-      <header>
-        <strong>Ghana Transport Admin</strong>
-      </header>
-      <main>
+    <div className="signin">
+      <aside className="signin-brand">
+        <div className="flag-stripe" aria-hidden="true">
+          <span />
+          <span>★</span>
+          <span />
+        </div>
+        <div className="signin-brand-body">
+          <div className="signin-logo" aria-hidden="true">★</div>
+          <h1>Ghana Transport Admin</h1>
+          <p>Fares, stations, reports and safety for the field and operations team.</p>
+        </div>
+      </aside>
+      <main className="signin-panel">
         {state.status === 'loading' && <p className="muted">Loading…</p>}
         {state.status === 'signed_out' && <PasswordStep />}
         {state.status === 'needs_mfa' && <MfaStep />}
       </main>
-    </>
+    </div>
   );
 }
 
@@ -45,7 +54,8 @@ function PasswordStep() {
 
   return (
     <form onSubmit={submit}>
-      <h1>Staff sign in</h1>
+      <h2>Staff sign in</h2>
+      <p className="muted">Staff accounts are created by an admin. Your second step is a code from your authenticator app.</p>
       <label>
         Email
         <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -90,7 +100,7 @@ function MfaStep() {
 
   return (
     <form onSubmit={submit}>
-      <h1>Two-factor code</h1>
+      <h2>Two-factor code</h2>
       {qr && (
         <>
           <p>Scan this with an authenticator app (Google Authenticator, Authy, 1Password), then enter the code.</p>

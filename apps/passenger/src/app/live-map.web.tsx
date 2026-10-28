@@ -42,7 +42,7 @@ export default function LiveMapScreen() {
   useEffect(() => {
     if (!KEY || !origin || !destination || !mapDiv.current) return;
     let live = true;
-    Promise.all([loadGoogleMaps(KEY), loadDrivingRoute(KEY, origin, destination)])
+    Promise.all([loadGoogleMaps(KEY), loadDrivingRoute(origin, destination)])
       .then(([maps, loaded]) => {
         if (!live || !mapDiv.current) return;
         const toLatLng = (p: LatLng) => ({ lat: p.latitude, lng: p.longitude });

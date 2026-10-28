@@ -44,6 +44,13 @@ export const en = {
   'auth.verify': 'Verify',
   'auth.invalidPhone': 'Enter a valid Ghana mobile number.',
   'auth.codeSent': 'We sent a code to {phone}.',
+  'auth.welcome': 'Akwaaba! Sign in',
+  'auth.noPassword': 'No password needed. We text you a 6-digit code. New here? The same steps create your account.',
+  'auth.step': 'Step {n} of 2',
+  'auth.changeNumber': 'Change number',
+  'auth.resend': 'Send a new code',
+  'auth.resendIn': 'New code in {seconds} s',
+  'auth.wrongCode': 'That code did not work. Check the SMS and try again.',
 
   'report.button': 'Report what you paid',
   'report.title': 'What did you pay?',
