@@ -2,6 +2,7 @@ import { latestConsents } from '@gta/shared';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { SignInPrompt } from '../components/SignInPrompt';
 import { Body, Button, Notice, Screen, Title } from '../components/ui';
 import { clearConsentCache, recordConsents, useConsents } from '../lib/consent';
 import { confirmAsync } from '../lib/confirm';
@@ -37,13 +38,7 @@ export default function PrivacyScreen() {
   }, [userId]);
 
   if (!session || !userId) {
-    return (
-      <Screen>
-        <Title>{t('privacy.title')}</Title>
-        {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
-        <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
-      </Screen>
-    );
+    return <SignInPrompt reason="privacy" before={notice && <Notice tone={notice.tone}>{notice.text}</Notice>} />;
   }
 
   const latest = latestConsents(consents.rows);

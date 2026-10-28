@@ -13,9 +13,8 @@ type Params = { route_id?: string; operator_id?: string; label?: string };
 
 /** P1-SAFE-03: passengers rate the driver from 1 to 5 stars, with quick tags. Works offline. */
 export default function RateDriverScreen() {
-  const { t } = useI18n();
   return (
-    <ReportGate title={t('rate.title')}>
+    <ReportGate reason="rateDriver">
       <RateDriverForm />
     </ReportGate>
   );

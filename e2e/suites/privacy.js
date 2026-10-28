@@ -13,7 +13,8 @@ module.exports = {
       await openResults(page, base, 'Kasoa');
       await page.getByRole('button', { name: 'Report what you paid' }).click();
       await page.getByRole('button', { name: 'Continue' }).click();
-      await page.getByText('We keep your phone number to stop fake reports. We never sell your data.').waitFor();
+      // The prompt and the consent page both list this; the consent page is on top.
+      await page.getByText('We keep your phone number to stop fake reports. We never sell your data.').last().waitFor();
       await page.getByRole('link', { name: 'Terms of use' }).waitFor();
       await page.getByRole('link', { name: 'Privacy policy' }).waitFor();
       await page.getByLabel('Send me news about new features (optional)').click();
@@ -67,7 +68,7 @@ module.exports = {
       });
       await page.getByRole('button', { name: 'Delete my account' }).click();
       await page.getByText('Your account has been deleted.').waitFor();
-      await page.getByRole('button', { name: 'Sign in' }).waitFor();
+      await page.getByRole('button', { name: 'Sign in with your phone number' }).waitFor();
       const left = sql(`select (select count(*) from consents where user_id = '${PASSENGER}')||','||(select count(*) from profiles where id = '${PASSENGER}')||','||(select count(*) from fare_reports where user_id is null and amount_pesewas = 1200)`);
       if (left !== '0,0,1') throw new Error(`consents,profile,anonymous report = ${left}`);
     });

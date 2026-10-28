@@ -110,8 +110,16 @@ module.exports = {
 
     await step('signed out: reporting and rating ask to sign in', async () => {
       const anon = await (await browser.newContext({ viewport: { width: 360, height: 800 } })).newPage();
+      await anon.goto(`${base}/`);
+      await anon.goto(`${base}/report-driver`);
+      await anon.getByRole('heading', { name: 'Sign in to report a driver' }).waitFor();
+      await anon.getByText('Other passengers never see your name or number.').waitFor();
+      await anon.getByRole('button', { name: 'Not now' }).click();
+      await anon.getByRole('button', { name: 'Call 112: police, fire, ambulance' }).waitFor();
       await anon.goto(`${base}/rate-driver`);
-      await anon.getByText('Sign in to report fares. It only takes an SMS code.').waitFor();
+      await anon.getByRole('heading', { name: 'Sign in to rate the driver' }).waitFor();
+      await anon.getByRole('button', { name: 'Sign in with your phone number' }).click();
+      await anon.getByRole('button', { name: 'Send code' }).waitFor();
       await anon.context().close();
     });
   },

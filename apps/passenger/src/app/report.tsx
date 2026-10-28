@@ -2,6 +2,7 @@ import { parseCedisToPesewas } from '@gta/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ConsentPrompt, SignInPrompt } from '../components/SignInPrompt';
 import { Body, Button, Notice, Screen, Title } from '../components/ui';
 import { useConsents } from '../lib/consent';
 import { useI18n } from '../lib/i18n';
@@ -53,31 +54,10 @@ export default function ReportScreen() {
     setResult(isPending(item.client_id) ? 'queued' : 'thanks');
   }
 
-  if (!session) {
-    return (
-      <Screen>
-        <Title>{t('report.title')}</Title>
-        <Body>{t('report.signInFirst')}</Body>
-        <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
-      </Screen>
-    );
-  }
+  if (!session) return <SignInPrompt reason="reportFare" />;
 
-  if (!consents.agreed && !result) {
-    return (
-      <Screen>
-        <Title>{t('legal.title')}</Title>
-        {consents.loaded ? (
-          <>
-            <Body>{t('legal.intro')}</Body>
-            <Button label={t('legal.continue')} onPress={() => router.push('/consent')} />
-          </>
-        ) : (
-          <Body muted>{t('common.loading')}</Body>
-        )}
-      </Screen>
-    );
-  }
+  if (!consents.agreed && !result) return <ConsentPrompt loaded={consents.loaded} />;
+
 
   if (result) {
     return (

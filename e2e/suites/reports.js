@@ -71,7 +71,7 @@ module.exports = {
       const anon = await (await browser.newContext({ viewport: { width: 360, height: 800 } })).newPage();
       await openResults(anon, base, 'Kasoa');
       await anon.getByRole('button', { name: 'Report what you paid' }).click();
-      await anon.getByText('Sign in to report fares. It only takes an SMS code.').waitFor();
+      await anon.getByRole('heading', { name: 'Sign in to report a fare' }).waitFor();
     });
     await step('feature switch off hides reporting', async () => {
       sql("update feature_flags set enabled = false where key = 'phase1.fare_reports'");

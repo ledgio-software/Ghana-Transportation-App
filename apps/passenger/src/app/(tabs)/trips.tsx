@@ -1,8 +1,9 @@
 import type { StationRow } from '@gta/shared';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { SignInPrompt } from '../../components/SignInPrompt';
 import { SavedTripCard, TripCard } from '../../components/TripCard';
-import { Body, Button, Card, Notice, Screen, Title } from '../../components/ui';
+import { Body, Button, Notice, Screen, Title } from '../../components/ui';
 import { useAlerts } from '../../lib/alerts';
 import { loadStations } from '../../lib/api';
 import { confirmAsync } from '../../lib/confirm';
@@ -37,12 +38,7 @@ export default function TripsTab() {
           onPress={() => router.push('/alerts')}
         />
       )}
-      {!signedIn && (
-        <Card>
-          <Body>{t('saved.signIn')}</Body>
-          <Button label={t('settings.signIn')} onPress={() => router.push('/sign-in')} />
-        </Card>
-      )}
+      {!signedIn && <SignInPrompt reason="saved" compact />}
       {trips.length === 0 && <Body muted>{t('saved.none')}</Body>}
       {trips.map((trip) => (
         <SavedTripCard
