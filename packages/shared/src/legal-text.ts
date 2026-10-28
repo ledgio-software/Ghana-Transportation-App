@@ -80,7 +80,7 @@ export function privacyPolicy(e: LegalEntity = LEGAL_ENTITY): LegalDocument {
             'Technical data: your IP address, browser or phone type and app version, kept in our hosting providers\' logs for security and to fix faults.',
           ],
           'We do not collect your contacts, ID numbers or payment details. We do not use advertising or tracking tools, and we never sell your data.',
-          'Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips and reports waiting to be sent. Deleting the app (or clearing the website\'s data in your browser) removes it.',
+          'Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips, your recent trips (until you clear them in My trips) and reports waiting to be sent. Deleting the app (or clearing the website\'s data in your browser) removes it.',
         ],
       },
       {

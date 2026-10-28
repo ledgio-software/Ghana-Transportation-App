@@ -1,6 +1,6 @@
 /**
- * GET /api/weather?lat=5.57&lon=-0.22: the forecast for one place, trimmed to the next 36 hours
- * (ADR 0013). Runs as a Vercel Function next to the web app. MET Norway is free for commercial
+ * GET /api/weather?lat=5.57&lon=-0.22: the forecast for one place, trimmed to the next 4 days:
+ * the trip itself and the forecast on the results screen (ADR 0013). Runs as a Vercel Function next to the web app. MET Norway is free for commercial
  * use but needs an identifying User-Agent, which a browser cannot send, hence this proxy.
  * Vercel's edge cache keeps each answer for 30 minutes, so popular stations cost one call.
  */
@@ -9,7 +9,7 @@ import type { ForecastPeriod } from '@gta/shared';
 
 const MET_URL = 'https://api.met.no/weatherapi/locationforecast/2.0/complete';
 const USER_AGENT = 'GhanaTransport/0.1 (+https://ghana-transportation-app-passenger.vercel.app)';
-const HOURS_AHEAD = 36;
+const HOURS_AHEAD = 96;
 
 interface MetPeriod {
   summary?: { symbol_code?: string };

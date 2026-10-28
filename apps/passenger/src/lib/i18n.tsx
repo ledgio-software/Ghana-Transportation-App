@@ -52,6 +52,16 @@ export function formatTime(date: Date, lang: Language): string {
   });
 }
 
+/** "Thu 29 Oct" for a day in Ghana ("2026-10-29"). */
+export function formatDay(date: string, lang: Language): string {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString(lang === 'tw' ? 'en-GH' : 'en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'Africa/Accra',
+  });
+}
+
 export function formatDate(iso: string, lang: Language): string {
   return new Date(iso).toLocaleDateString(lang === 'tw' ? 'en-GH' : 'en-GB', {
     day: 'numeric',

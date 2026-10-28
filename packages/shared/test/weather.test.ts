@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distanceKm, type ForecastPeriod, rainLevel, skyOf, tripWeather } from '../src';
+import { dailyOutlook, distanceKm, type ForecastPeriod, hourlyOutlook, rainLevel, skyOf, tripWeather } from '../src';
 
 const at = (h: number) => new Date(Date.UTC(2026, 9, 27, h));
 const hour = (h: number, symbol: string, precipMm = 0, tempC = 28, precipProbability: number | null = null): ForecastPeriod => ({
@@ -71,5 +71,45 @@ describe('weather', () => {
     const km = distanceKm({ latitude: 5.5717, longitude: -0.2166 }, { latitude: 6.686, longitude: -1.616 });
     expect(Math.round(km)).toBeGreaterThan(190);
     expect(Math.round(km)).toBeLessThan(205);
+  });
+});
+
+describe('forecast: next hours and next days', () => {
+  const now = new Date('2026-10-28T09:30:00Z');
+  const hourly = (start: string, n: number, f: (i: number) => Partial<ForecastPeriod> = () => ({})) =>
+    Array.from({ length: n }, (_, i) => ({
+      time: new Date(Date.parse(start) + i * 3_600_000).toISOString().replace('.000', ''),
+      hours: 1,
+      symbol: 'partlycloudy_day',
+      precipMm: 0,
+      precipProbability: null,
+      tempC: 25 + (i % 6),
+      ...f(i),
+    }));
+
+  it('gives the weather every 3 hours from now', () => {
+    const periods = hourly('2026-10-28T09:00:00Z', 24, (i) => (i === 6 ? { symbol: 'rain', precipMm: 2 } : {}));
+    const out = hourlyOutlook(periods, now);
+    expect(out.map((h) => h.at.toISOString())).toEqual([
+      '2026-10-28T12:30:00.000Z',
+      '2026-10-28T15:30:00.000Z',
+      '2026-10-28T18:30:00.000Z',
+      '2026-10-28T21:30:00.000Z',
+    ]);
+    expect(out[1]).toMatchObject({ sky: 'rain', rain: 'rain' });
+    expect(out[0]).toMatchObject({ sky: 'partly', rain: 'none' });
+  });
+
+  it('sums up each of the next days: coolest, warmest, worst sky, most rain', () => {
+    const periods: ForecastPeriod[] = [
+      ...hourly('2026-10-28T09:00:00Z', 15),
+      { time: '2026-10-29T00:00:00Z', hours: 6, symbol: 'cloudy', precipMm: 0, precipProbability: null, tempC: 22.6 },
+      { time: '2026-10-29T06:00:00Z', hours: 6, symbol: 'heavyrainandthunder', precipMm: 60, precipProbability: 90, tempC: 30.2 },
+      { time: '2026-10-30T12:00:00Z', hours: 6, symbol: 'clearsky_day', precipMm: 0, precipProbability: null, tempC: 32 },
+    ];
+    expect(dailyOutlook(periods, now)).toEqual([
+      { date: '2026-10-29', minC: 23, maxC: 30, sky: 'thunder', rain: 'heavy' },
+      { date: '2026-10-30', minC: 32, maxC: 32, sky: 'clear', rain: 'none' },
+    ]);
   });
 });

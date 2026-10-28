@@ -1,5 +1,8 @@
 import {
+  dailyOutlook,
   distanceKm,
+  type ForecastPeriod,
+  hourlyOutlook,
   type LatLng,
   midpoint,
   type PlaceWeather,
@@ -9,10 +12,10 @@ import {
   tripWeather,
 } from '@gta/shared';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { formatTime, useI18n } from '../lib/i18n';
+import { StyleSheet, Text, View } from 'react-native';
+import { formatDay, formatTime, useI18n } from '../lib/i18n';
 import { loadForecast } from '../lib/weather';
-import { space } from '../lib/theme';
+import { colors, font, radius, space } from '../lib/theme';
 import { Body, Notice, Title } from './ui';
 
 type Stop = Omit<TripPoint, 'forecast'> & { place: LatLng };
@@ -35,6 +38,8 @@ export function TripWeather({
 }) {
   const { t, lang } = useI18n();
   const [weather, setWeather] = useState<Weather | null>(null);
+  // The destination's forecast, for "next hours" and "next days" there (P1-WX-03).
+  const [ahead, setAhead] = useState<ForecastPeriod[] | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -60,7 +65,9 @@ export function TripWeather({
           .catch(() => null),
       ),
     ).then((points) => {
-      if (live) setWeather(tripWeather(points.filter((p): p is TripPoint => p !== null)));
+      if (!live) return;
+      setWeather(tripWeather(points.filter((p): p is TripPoint => p !== null)));
+      setAhead(points[points.length - 1]?.forecast ?? null);
     });
     return () => {
       live = false;
@@ -95,11 +102,58 @@ export function TripWeather({
           {p.rain === 'rain' && p.rainAt ? ` · ${t('wx.rainAround', { time: formatTime(p.rainAt, lang) })}` : ''}
         </Body>
       ))}
+      {ahead && <Forecast periods={ahead} place={destination.name} />}
       <Body muted>{t('wx.source')}</Body>
+    </View>
+  );
+}
+
+/** Next hours and next days at the destination, so people can plan a later trip too. */
+function Forecast({ periods, place }: { periods: ForecastPeriod[]; place: string }) {
+  const { t, lang } = useI18n();
+  const now = new Date();
+  const hours = hourlyOutlook(periods, now);
+  const days = dailyOutlook(periods, now);
+  if (hours.length === 0 && days.length === 0) return null;
+  return (
+    <View style={styles.forecast}>
+      <Text style={styles.heading}>{t('wx.forecast', { place })}</Text>
+      <View style={styles.hours}>
+        {hours.map((h) => (
+          <View key={h.at.toISOString()} style={[styles.hour, h.rain !== 'none' && styles.wet]}>
+            <Text style={styles.hourTime}>{formatTime(h.at, lang)}</Text>
+            <Text style={styles.hourTemp}>{h.tempC}°C</Text>
+            <Text style={styles.hourSky}>{t(`wx.sky.${h.sky}`)}</Text>
+          </View>
+        ))}
+      </View>
+      {days.map((d) => (
+        <Body key={d.date}>
+          {formatDay(d.date, lang)}: {t('wx.dayRange', { min: String(d.minC), max: String(d.maxC), sky: t(`wx.sky.${d.sky}`) })}
+          {d.rain !== 'none' && d.sky !== 'rain' && d.sky !== 'heavyRain' && d.sky !== 'thunder' ? `, ${t('wx.sky.rain')}` : ''}
+        </Body>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: { gap: space.sm, marginBottom: space.md },
+  forecast: { gap: space.sm, marginTop: space.xs },
+  heading: { fontSize: font.body, fontWeight: '700', color: colors.text },
+  hours: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  hour: {
+    flexGrow: 1,
+    minWidth: 72,
+    padding: space.sm,
+    gap: 2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  wet: { borderColor: colors.warning },
+  hourTime: { fontSize: font.small, color: colors.muted, fontWeight: '600' },
+  hourTemp: { fontSize: font.heading, fontWeight: '700', color: colors.text },
+  hourSky: { fontSize: font.small, color: colors.text },
 });

@@ -70,6 +70,16 @@ module.exports = {
       if (await page.getByText('Take an umbrella', { exact: false }).count()) throw new Error('umbrella on a dry day');
     });
 
+    await step('the forecast at the destination: every 3 hours, then the next day', async () => {
+      await answerWeather(page, { [CIRCLE]: dry(), [KASOA]: dry() });
+      await openResults(page, base, 'Kasoa');
+      await page.getByText('Forecast for Kasoa').waitFor();
+      // 4 slots, 3 hours apart, from the 36-hour stand-in forecast.
+      const slots = page.getByText(/^\d{1,2}:\d{2}\s?[ap]m$/);
+      await slots.nth(3).waitFor();
+      await page.getByText(/^[A-Z][a-z]{2},? \d{1,2} [A-Z][a-z]{2}: 29–29°C, partly cloudy$/).first().waitFor();
+    });
+
     await step('no forecast: the weather is hidden and fares still show', async () => {
       await answerWeather(page, {});
       await openResults(page, base, 'Kasoa');

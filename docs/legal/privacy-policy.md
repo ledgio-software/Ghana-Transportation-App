@@ -34,7 +34,7 @@ To send reports or get fare-change alerts, you sign in with your phone number an
 
 We do not collect your contacts, ID numbers or payment details. We do not use advertising or tracking tools, and we never sell your data.
 
-Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips and reports waiting to be sent. Deleting the app (or clearing the website's data in your browser) removes it.
+Some data is kept on your phone so the app works without network: stations, fares you looked up, saved trips, your recent trips (until you clear them in My trips) and reports waiting to be sent. Deleting the app (or clearing the website's data in your browser) removes it.
 
 ## 4. Our legal reasons for using your data
 

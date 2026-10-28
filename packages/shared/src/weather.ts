@@ -112,6 +112,61 @@ export function tripWeather(points: TripPoint[]): TripWeather | null {
   return { places, umbrella: places.some((p) => p.rain !== 'none') };
 }
 
+/** Most severe last, for "the worst sky of the day". */
+const SKY_ORDER: Record<Sky, number> = { clear: 0, partly: 1, cloudy: 2, fog: 3, rain: 4, heavyRain: 5, thunder: 6 };
+
+/** The forecast period covering a moment, if any. */
+function periodAt(periods: readonly ForecastPeriod[], at: number): ForecastPeriod | undefined {
+  return periods.find((p) => Date.parse(p.time) <= at && at < Date.parse(p.time) + p.hours * 3_600_000);
+}
+
+export interface HourOutlook {
+  at: Date;
+  tempC: number;
+  sky: Sky;
+  rain: RainLevel;
+}
+
+/** The next few hours at one place: every `stepH` hours from now, `count` times (P1-WX-03). */
+export function hourlyOutlook(periods: readonly ForecastPeriod[], now: Date, count = 4, stepH = 3): HourOutlook[] {
+  const out: HourOutlook[] = [];
+  for (let i = 1; i <= count; i++) {
+    const at = now.getTime() + i * stepH * 3_600_000;
+    const p = periodAt(periods, at);
+    if (p) out.push({ at: new Date(at), tempC: Math.round(p.tempC), sky: skyOf(p.symbol), rain: rainLevel(p) });
+  }
+  return out;
+}
+
+export interface DayOutlook {
+  /** The day in Ghana (UTC all year), "2026-10-29". */
+  date: string;
+  minC: number;
+  maxC: number;
+  /** The worst sky and the most rain of the day. */
+  sky: Sky;
+  rain: RainLevel;
+}
+
+/** The next days at one place, starting tomorrow, as far as the forecast reaches (P1-WX-03). */
+export function dailyOutlook(periods: readonly ForecastPeriod[], now: Date, days = 3): DayOutlook[] {
+  const out: DayOutlook[] = [];
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + d)).toISOString().slice(0, 10);
+    const day = periods.filter((p) => p.time.slice(0, 10) === date);
+    if (day.length === 0) continue;
+    const temps = day.map((p) => p.tempC);
+    let sky = skyOf(day[0]!.symbol);
+    let rain: RainLevel = 'none';
+    for (const p of day) {
+      if (SKY_ORDER[skyOf(p.symbol)] > SKY_ORDER[sky]) sky = skyOf(p.symbol);
+      if (RAIN_ORDER[rainLevel(p)] > RAIN_ORDER[rain]) rain = rainLevel(p);
+    }
+    out.push({ date, minC: Math.round(Math.min(...temps)), maxC: Math.round(Math.max(...temps)), sky, rain });
+  }
+  return out;
+}
+
 /** Midpoint used for "along the way" on longer trips. */
 export function midpoint(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
   return { latitude: (a.latitude + b.latitude) / 2, longitude: (a.longitude + b.longitude) / 2 };
